@@ -1,0 +1,339 @@
+<!-- TAB 1: VERBS -->
+<div id="tab-verbs" class="tab-panel active">
+
+  <div class="view-toggle">
+    <button class="view-btn active" id="btn-card-view" onclick="setVerbView('cards')">🃏 Cards</button>
+    <button class="view-btn" id="btn-table-view" onclick="setVerbView('table')">📊 Table</button>
+  </div>
+
+  <div class="cat-picker" id="verb-cat-picker"></div>
+  <div class="cat-actions">
+    <button class="cat-action-btn" onclick="verbSelectAll()">Select All</button>
+    <button class="cat-action-btn" onclick="verbClearAll()">Clear All</button>
+  </div>
+
+  <div id="verb-story-intro"></div>
+
+  <!-- CARD VIEW -->
+  <div id="verb-card-view">
+    <div class="card-grid" id="verb-card-grid"></div>
+  </div>
+
+  <!-- TABLE VIEW -->
+  <div id="verb-table-view" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Verb</th>
+            <th class="inf-col">Infinitive<span class="th-note">wij / jullie / zij</span></th>
+            <th>ik<span class="th-note">present</span></th>
+            <th>je/jij<span class="th-note">present</span></th>
+            <th>hij/zij/het/u<span class="th-note">present</span></th>
+            <th>ik<span class="th-note">simple past</span></th>
+            <th>rest<span class="th-note">simple past</span></th>
+            <th>participle<span class="th-note">hebben / zijn</span></th>
+            <th>passive<span class="th-note">present</span></th>
+            <th>passive<span class="th-note">past</span></th>
+          </tr>
+        </thead>
+        <tbody id="verb-table-body"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#e8f2ff"></div>Present</div>
+      <div class="leg"><div class="leg-dot" style="background:#e8f5e8"></div>Infinitive</div>
+      <div class="leg"><div class="leg-dot" style="background:#fff3e8"></div>Simple past</div>
+      <div class="leg"><div class="leg-dot" style="background:#f3e8ff"></div>Participle</div>
+      <div class="leg"><div class="leg-dot" style="background:#ffeef8"></div>Passive</div>
+      <div class="leg"><span class="aux aux-h">hebben</span></div>
+      <div class="leg"><span class="aux aux-z">zijn</span></div>
+    </div>
+  </div>
+
+  <!-- Highlight legend -->
+  <div class="hl-legend" style="margin-top:10px">
+    <div class="leg"><span class="hl-neg">■</span> Negation</div>
+    <div class="leg"><span class="hl-conn">■</span> Connector</div>
+    <div class="leg"><span class="hl-comp">■</span> Comparative</div>
+    <div class="leg"><span class="hl-pron">■</span> Object pronoun</div>
+    <div class="leg"><span class="hl-poss">■</span> Possessive</div>
+  </div>
+
+</div>
+
+<script>
+// ─── VERB TAB LOGIC ───
+
+const V_COLS = [
+  { key:'infinitive',   label:'Infinitive',    cls:'inf'  },
+  { key:'ik_pres',      label:'ik (present)',  cls:'pres' },
+  { key:'jij_pres',     label:'jij (present)', cls:'pres' },
+  { key:'hij_pres',     label:'hij (present)', cls:'pres' },
+  { key:'ik_past',      label:'ik (past)',     cls:'past' },
+  { key:'rest_past',    label:'rest (past)',   cls:'past' },
+  { key:'participle',   label:'participle',    cls:'part' },
+  { key:'passive_pres', label:'passive pres',  cls:'pass' },
+  { key:'passive_past', label:'passive past',  cls:'pass' },
+];
+
+function vGetForm(verb, colKey) {
+  return { infinitive:verb.nl, ik_pres:verb.ik, jij_pres:verb.jij,
+           hij_pres:verb.hij, ik_past:verb.pastIk, rest_past:verb.pastRest,
+           participle:verb.participle, passive_pres:verb.pp, passive_past:verb.pp2
+         }[colKey] || '—';
+}
+
+function vGetSents(verb, colKey) {
+  try {
+    const s = verb.sentences[colKey][APP.theme][APP.difficulty];
+    if (!s || !s.length || s[0].nl === '—') return null;
+    return s;
+  } catch(e) { return null; }
+}
+
+// ── category picker ──
+const verbCats = [...new Set(VERB_DATA.verbs.map(v => v.cat))];
+const verbSelectedCats = new Set(verbCats);
+const verbCellIdx = {};
+
+function verbSelectAll() {
+  verbCats.forEach(c => verbSelectedCats.add(c));
+  document.querySelectorAll('#verb-cat-picker .cat-btn').forEach(b => b.classList.add('sel'));
+  renderVerbs();
+}
+function verbClearAll() {
+  verbSelectedCats.clear();
+  document.querySelectorAll('#verb-cat-picker .cat-btn').forEach(b => b.classList.remove('sel'));
+  renderVerbs();
+}
+
+const vPicker = document.getElementById('verb-cat-picker');
+verbCats.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.className = 'cat-btn sel';
+  btn.textContent = cat;
+  btn.onclick = () => {
+    if (verbSelectedCats.has(cat)) { verbSelectedCats.delete(cat); btn.classList.remove('sel'); }
+    else { verbSelectedCats.add(cat); btn.classList.add('sel'); }
+    renderVerbs();
+  };
+  vPicker.appendChild(btn);
+});
+
+// ── view toggle ──
+function setVerbView(v) {
+  document.getElementById('verb-card-view').style.display = v === 'cards' ? '' : 'none';
+  document.getElementById('verb-table-view').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('btn-card-view').classList.toggle('active', v === 'cards');
+  document.getElementById('btn-table-view').classList.toggle('active', v === 'table');
+}
+
+// ── story intro ──
+function updateStoryIntro() {
+  const cats = [...verbSelectedCats];
+  if (!cats.length) { document.getElementById('verb-story-intro').innerHTML = ''; return; }
+  const story = VERB_DATA.stories[APP.theme]?.[cats[0]] || '';
+  const chars = APP.theme === 'office'
+    ? [{emoji:'👨',name:'Lars (developer)'},{emoji:'👩',name:'Lotte (manager)'},{emoji:'👨‍💼',name:'Thomas (intern)'}]
+    : [{emoji:'👦',name:'Krishna'},{emoji:'👧',name:'Sita'},{emoji:'💪',name:'Hanuman'}];
+  document.getElementById('verb-story-intro').innerHTML =
+    buildStoryIntro({ id:'verb-story', title:'📖 ' + cats[0], body: story, chars });
+}
+
+// ── CARD VIEW ──
+function renderCardGrid() {
+  const grid = document.getElementById('verb-card-grid');
+  grid.innerHTML = '';
+  let currentCat = '';
+
+  VERB_DATA.verbs.forEach((verb, vi) => {
+    if (!verbSelectedCats.has(verb.cat)) return;
+
+    if (verb.cat !== currentCat) {
+      currentCat = verb.cat;
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'grid-column:1/-1;font-size:.68rem;font-weight:700;color:#e85d2a;text-transform:uppercase;letter-spacing:.06em;padding:6px 0 2px';
+      hdr.textContent = verb.cat;
+      grid.appendChild(hdr);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'vocab-card';
+    card.id = 'vcard_' + vi;
+    card.innerHTML = `
+      <span class="card-emoji">${verb.emoji}</span>
+      <div class="card-nl">${verb.nl}</div>
+      <div class="card-en">${verb.en}</div>
+      <div id="vcard_${vi}_sent"></div>`;
+    card.onclick = () => toggleVerbCard(vi);
+    grid.appendChild(card);
+  });
+}
+
+function toggleVerbCard(vi) {
+  const card = document.getElementById('vcard_' + vi);
+  const sentDiv = document.getElementById('vcard_' + vi + '_sent');
+  const verb = VERB_DATA.verbs[vi];
+  const cid = 'vcard_' + vi + '_inf';
+
+  if (card.classList.contains('open')) {
+    card.classList.remove('open');
+    sentDiv.innerHTML = '';
+    return;
+  }
+  card.classList.add('open');
+
+  const sents = vGetSents(verb, 'infinitive');
+  if (!sents) { sentDiv.innerHTML = '<div style="font-size:.68rem;color:#a0b0c0;padding:4px">No example yet.</div>'; return; }
+
+  if (verbCellIdx[cid] === undefined) verbCellIdx[cid] = 0;
+  const idx = verbCellIdx[cid] % sents.length;
+
+  sentDiv.innerHTML = buildSentenceCard(sents[idx], idx, sents.length, cid, {
+    next:      'nextVerbCard(' + vi + ')',
+    translate: "toggleTranslate('" + cid + "')",
+    close:     'closeVerbCard(' + vi + ')'
+  });
+}
+
+function nextVerbCard(vi) {
+  const cid = 'vcard_' + vi + '_inf';
+  verbCellIdx[cid] = (verbCellIdx[cid] || 0) + 1;
+  const card = document.getElementById('vcard_' + vi);
+  card.classList.remove('open');
+  document.getElementById('vcard_' + vi + '_sent').innerHTML = '';
+  toggleVerbCard(vi);
+}
+
+function closeVerbCard(vi) {
+  const card = document.getElementById('vcard_' + vi);
+  card.classList.remove('open');
+  document.getElementById('vcard_' + vi + '_sent').innerHTML = '';
+}
+
+// ── TABLE VIEW ──
+function renderTable() {
+  const tbody = document.getElementById('verb-table-body');
+  tbody.innerHTML = '';
+  let currentCat = '';
+
+  VERB_DATA.verbs.forEach((verb, vi) => {
+    if (!verbSelectedCats.has(verb.cat)) return;
+
+    if (verb.cat !== currentCat) {
+      currentCat = verb.cat;
+      const tr = document.createElement('tr');
+      tr.className = 'cat-row';
+      tr.innerHTML = '<td colspan="10">' + verb.cat + '</td>';
+      tbody.appendChild(tr);
+    }
+
+    const tr = document.createElement('tr');
+    let html = '<td class="verb-cell">'
+      + '<span class="verb-emoji">' + verb.emoji + '</span>'
+      + '<div class="verb-en">' + verb.en + '</div>'
+      + '<div class="verb-nl">' + verb.nl + '</div>'
+      + '</td>';
+
+    V_COLS.forEach(col => {
+      const form = vGetForm(verb, col.key);
+      const cid  = 'vtbl_' + vi + '_' + col.key;
+
+      if (form === '—') {
+        html += '<td class="conj-cell na ' + col.cls + '"><span class="conj-form">—</span></td>';
+      } else {
+        let display = form;
+        if (col.key === 'participle' && verb.aux && verb.aux !== '—') {
+          const ac = verb.aux === 'hebben' ? 'aux-h' : 'aux-z';
+          display += ' <span class="aux ' + ac + '">' + verb.aux + '</span>';
+        }
+        // pass colKey as string literal so it survives into onclick scope
+        html += '<td class="conj-cell ' + col.cls + '" onclick="toggleTblCell(\'' + cid + '\',' + vi + ',\'' + col.key + '\')">'
+          + '<span class="conj-form">' + display + '</span>'
+          + '<div class="cell-expanded" id="' + cid + '"></div>'
+          + '</td>';
+      }
+    });
+
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleTblCell(cid, vi, colKey) {
+  const area = document.getElementById(cid);
+  if (!area) return;
+  if (area.classList.contains('open')) {
+    area.classList.remove('open');
+    area.innerHTML = '';
+    return;
+  }
+
+  const verb  = VERB_DATA.verbs[vi];
+  const sents = vGetSents(verb, colKey);
+
+  if (!sents) {
+    area.classList.add('open');
+    area.innerHTML = '<div style="font-size:.68rem;color:#a0b0c0;padding:4px">No example available.</div>';
+    return;
+  }
+
+  if (verbCellIdx[cid] === undefined) verbCellIdx[cid] = 0;
+  const idx  = verbCellIdx[cid] % sents.length;
+  const sent = sents[idx];
+
+  area.classList.add('open');
+  area.innerHTML = buildSentenceCard(sent, idx, sents.length, cid, {
+    next:      'nextTblCell(\'' + cid + '\',' + vi + ',\'' + colKey + '\')',
+    translate: 'toggleTranslate(\'' + cid + '\')',
+    close:     'closeTblCell(\'' + cid + '\')'
+  });
+}
+
+function nextTblCell(cid, vi, colKey) {
+  verbCellIdx[cid] = (verbCellIdx[cid] || 0) + 1;
+  const area = document.getElementById(cid);
+  if (area) { area.classList.remove('open'); area.innerHTML = ''; }
+  toggleTblCell(cid, vi, colKey);
+}
+
+function closeTblCell(cid) {
+  const area = document.getElementById(cid);
+  if (area) { area.classList.remove('open'); area.innerHTML = ''; }
+}
+
+// ── register sentences for global search ──
+function registerVerbSentences() {
+  const entries = [];
+  VERB_DATA.verbs.forEach(verb => {
+    V_COLS.forEach(col => {
+      ['office','kids'].forEach(th => {
+        ['simple','natural'].forEach(d => {
+          try {
+            const sents = verb.sentences[col.key][th][d];
+            if (!sents) return;
+            sents.forEach(s => {
+              if (s && s.nl && s.nl !== '—')
+                entries.push({ tab:'Verbs', category: verb.cat + ' › ' + verb.nl, colLabel: col.label, sent: s });
+            });
+          } catch(e) {}
+        });
+      });
+    });
+  });
+  registerSentences(entries);
+}
+
+// ── main render ──
+function renderVerbs() {
+  updateStoryIntro();
+  renderCardGrid();
+  renderTable();
+  registerVerbSentences();
+}
+
+document.addEventListener('app:themechange', renderVerbs);
+document.addEventListener('app:diffchange', renderVerbs);
+renderVerbs();
+</script>

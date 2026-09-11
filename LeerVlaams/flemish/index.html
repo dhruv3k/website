@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦁 LeerVlaams</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header id="app-header">
+  <h1>🦁 LeerVlaams</h1>
+  <p>Your Flemish Dutch learning companion · wij / jullie / zij always use the infinitive</p>
+
+  <!-- Global Search -->
+  <div id="search-wrap">
+    <span id="search-icon">🔍</span>
+    <input id="global-search" type="text" placeholder="Search any sentence in Dutch or English...">
+    <div id="search-results"></div>
+  </div>
+
+  <!-- Global Controls -->
+  <div id="global-controls">
+    <span class="ctrl-label">Theme:</span>
+    <button class="ctrl-btn active" data-theme="office">🏢 Office</button>
+    <button class="ctrl-btn" data-theme="kids">👧 Kids</button>
+    <div class="ctrl-sep"></div>
+    <span class="ctrl-label">Difficulty:</span>
+    <button class="ctrl-btn active" data-diff="simple">Simple</button>
+    <button class="ctrl-btn" data-diff="natural">Natural</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div id="tabs-nav">
+    <span class="tab-group-label">Grammar</span>
+    <button class="tab-btn active" data-tab="verbs">Verbs</button>
+    <button class="tab-btn" data-tab="connectors">Connectors</button>
+    <button class="tab-btn" data-tab="pronouns">Pronouns</button>
+    <button class="tab-btn" data-tab="adjectives">Adjectives</button>
+    <button class="tab-btn" data-tab="determiners">Determiners</button>
+    <button class="tab-btn" data-tab="prepositions">Prepositions</button>
+    <button class="tab-btn" data-tab="numbers">Numbers & Time</button>
+    <button class="tab-btn" data-tab="nouns">Nouns</button>
+    <button class="tab-btn" data-tab="phrases">Phrases</button>
+    <span class="tab-group-label">Topics</span>
+    <button class="tab-btn" data-tab="space">🚀 Space</button>
+    <button class="tab-btn" data-tab="sea">🌊 Sea</button>
+    <button class="tab-btn" data-tab="birds">🐦 Birds</button>
+    <button class="tab-btn" data-tab="travel">✈️ Travel</button>
+    <button class="tab-btn" data-tab="food">🍽️ Food</button>
+    <button class="tab-btn" data-tab="health">🏥 Health</button>
+    <button class="tab-btn" data-tab="shopping">🛒 Shopping</button>
+    <button class="tab-btn" data-tab="nature">🌿 Nature</button>
+    <button class="tab-btn" data-tab="home">🏠 Home</button>
+    <button class="tab-btn" data-tab="school">🎓 School</button>
+  </div>
+</header>
+
+<!-- ─── TAB PANELS ─── -->
+<!-- Tab content loaded inline below -->
+
+<!-- VERBS TAB (loaded from grammar/verbs/tab.html) -->
+<div id="tab-verbs-wrapper"></div>
+
+<!-- CONNECTORS TAB -->
+<div id="tab-connectors" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Connectors tab coming soon
+  </div>
+</div>
+
+<!-- PRONOUNS TAB -->
+<div id="tab-pronouns" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Pronouns tab coming soon
+  </div>
+</div>
+
+<!-- ADJECTIVES TAB -->
+<div id="tab-adjectives" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Adjectives tab coming soon
+  </div>
+</div>
+
+<!-- DETERMINERS TAB -->
+<div id="tab-determiners" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Determiners tab coming soon
+  </div>
+</div>
+
+<!-- PREPOSITIONS TAB -->
+<div id="tab-prepositions" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Prepositions tab coming soon
+  </div>
+</div>
+
+<!-- NUMBERS TAB -->
+<div id="tab-numbers" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Numbers & Time tab coming soon
+  </div>
+</div>
+
+<!-- NOUNS TAB -->
+<div id="tab-nouns" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Nouns & Diminutives tab coming soon
+  </div>
+</div>
+
+<!-- PHRASES TAB -->
+<div id="tab-phrases" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">
+    🔧 Phrases & Expressions tab coming soon
+  </div>
+</div>
+
+<!-- TOPIC TABS -->
+<div id="tab-space" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Space tab coming soon</div>
+</div>
+<div id="tab-sea" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Sea Animals tab coming soon</div>
+</div>
+<div id="tab-birds" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Birds tab coming soon</div>
+</div>
+<div id="tab-travel" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Travel tab coming soon</div>
+</div>
+<div id="tab-food" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Food tab coming soon</div>
+</div>
+<div id="tab-health" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Health tab coming soon</div>
+</div>
+<div id="tab-shopping" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Shopping tab coming soon</div>
+</div>
+<div id="tab-nature" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Nature tab coming soon</div>
+</div>
+<div id="tab-home" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 Home & Family tab coming soon</div>
+</div>
+<div id="tab-school" class="tab-panel" style="padding:14px">
+  <div style="text-align:center;color:#a0b0c0;padding:40px;font-size:.85rem">🔧 School tab coming soon</div>
+</div>
+
+<!-- ─── SCRIPTS ─── -->
+<script src="js/ui.js"></script>
+<script src="grammar/verbs/data.js"></script>
+
+<script>
+// Load verb tab HTML inline
+fetch('grammar/verbs/tab.html')
+  .then(r => r.text())
+  .then(html => {
+    document.getElementById('tab-verbs-wrapper').innerHTML = html;
+    // Re-run scripts inside loaded HTML
+    const scripts = document.getElementById('tab-verbs-wrapper').querySelectorAll('script');
+    scripts.forEach(s => {
+      const newS = document.createElement('script');
+      newS.textContent = s.textContent;
+      document.body.appendChild(newS);
+    });
+  });
+</script>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('tab-'+target);
+    if (panel) panel.classList.add('active');
+    // Also handle wrapper
+    const wrapper = document.getElementById('tab-'+target+'-wrapper');
+    if (wrapper) {
+      // show/hide wrapper
+      document.querySelectorAll('[id$="-wrapper"]').forEach(w => w.style.display = 'none');
+      wrapper.style.display = '';
+    } else {
+      document.querySelectorAll('[id$="-wrapper"]').forEach(w => w.style.display = 'none');
+    }
+  });
+});
+
+// Theme/difficulty controls
+document.querySelectorAll('[data-theme]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    APP.theme = btn.dataset.theme;
+    document.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.dispatchEvent(new Event('app:themechange'));
+  });
+});
+
+document.querySelectorAll('[data-diff]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    APP.difficulty = btn.dataset.diff;
+    document.querySelectorAll('[data-diff]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.dispatchEvent(new Event('app:diffchange'));
+  });
+});
+
+// Global search
+initSearch();
+</script>
+
+</body>
+</html>
