@@ -483,15 +483,6 @@ body {
   text-align: left;
   width: 100%;
   box-sizing: border-box;
-  height: 150px;
-  display: flex;
-  flex-direction: column;
-}
-
-.sent-scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 .sent-visuals {
@@ -577,8 +568,13 @@ body {
 .hl-poss { color: var(--possessive); font-weight: 700; }
 
 /* ─── TABLE ─── */
+/* Self-contained scroll box: the header sticks at top:0 relative to this
+   box itself, not the page. That removes any dependency on matching the
+   page-level header/toolbar heights, which kept drifting out of sync. */
 .table-wrap {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 65vh;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
@@ -601,14 +597,10 @@ thead th {
   white-space: nowrap;
   border-right: 1px solid var(--dark2);
   letter-spacing: .03em;
-  /* Sticks to the page scroll, right below the fixed header+toolbar. This
-     is reliable now that the header and toolbar above it are position:fixed
-     (a known, constant height) instead of also being sticky themselves.
-     The +14px matches #tab-verbs's own padding-top below the toolbar
-     (controls-h + 14px) — without it the header stuck 14px too early and
-     overlapped the first table row. */
+  /* Sticks to the top of .table-wrap's own scroll box (see above) — no
+     page-level offset math needed at all. */
   position: sticky;
-  top: calc(var(--header-h, 0px) + var(--controls-h, 0px) + 14px);
+  top: 0;
   z-index: 15;
 }
 
@@ -1051,78 +1043,24 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 
 </div>
 
-<div id="tab-connectors" class="tab-panel">
-  <div class="mini-note">🔧 Voegwoorden — minimale preview (volledige tabellen + woordvolgorde-demo komen later)<div class="mini-note-en">🔧 Connectors — minimal preview (full tables + word-order demo coming later)</div></div>
-  <div class="card-grid" id="mini-grid-connectors"></div>
-</div>
-<div id="tab-pronouns" class="tab-panel">
-  <div class="mini-note">🔧 Voornaamwoorden — minimale preview (volledige onderwerp-/lijdend voorwerp-/bezittelijke tabellen komen later)<div class="mini-note-en">🔧 Pronouns — minimal preview (full subject/object/possessive tables coming later)</div></div>
-  <div class="card-grid" id="mini-grid-pronouns"></div>
-</div>
-<div id="tab-adjectives" class="tab-panel">
-  <div class="mini-note">🔧 Bijvoeglijke naamwoorden — minimale preview (vergrotende/overtreffende trap-tabel komt later)<div class="mini-note-en">🔧 Adjectives — minimal preview (comparative/superlative table coming later)</div></div>
-  <div class="card-grid" id="mini-grid-adjectives"></div>
-</div>
-<div id="tab-determiners" class="tab-panel">
-  <div class="mini-note">🔧 Determinatoren — minimale preview (volledige tabel komt later)<div class="mini-note-en">🔧 Determiners — minimal preview (full table coming later)</div></div>
-  <div class="card-grid" id="mini-grid-determiners"></div>
-</div>
-<div id="tab-prepositions" class="tab-panel">
-  <div class="mini-note">🔧 Voorzetsels — minimale preview (volledige tabel komt later)<div class="mini-note-en">🔧 Prepositions — minimal preview (full table coming later)</div></div>
-  <div class="card-grid" id="mini-grid-prepositions"></div>
-</div>
-<div id="tab-numbers" class="tab-panel">
-  <div class="mini-note">🔧 Getallen & Tijd — minimale preview (volledige tabel komt later)<div class="mini-note-en">🔧 Numbers & Time — minimal preview (full table coming later)</div></div>
-  <div class="card-grid" id="mini-grid-numbers"></div>
-</div>
-<div id="tab-nouns" class="tab-panel">
-  <div class="mini-note">🔧 Zelfstandige naamwoorden — minimale preview (verkleinwoordtabel komt later)<div class="mini-note-en">🔧 Nouns — minimal preview (diminutive table coming later)</div></div>
-  <div class="card-grid" id="mini-grid-nouns"></div>
-</div>
-<div id="tab-phrases" class="tab-panel">
-  <div class="mini-note">🔧 Uitdrukkingen — minimale preview (volledige lijst komt later)<div class="mini-note-en">🔧 Phrases — minimal preview (full list coming later)</div></div>
-  <div class="card-grid" id="mini-grid-phrases"></div>
-</div>
-<div id="tab-space" class="tab-panel">
-  <div class="mini-note">🚀 Ruimte — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🚀 Space — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-space"></div>
-</div>
-<div id="tab-sea" class="tab-panel">
-  <div class="mini-note">🌊 Zee — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🌊 Sea — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-sea"></div>
-</div>
-<div id="tab-birds" class="tab-panel">
-  <div class="mini-note">🐦 Vogels — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🐦 Birds — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-birds"></div>
-</div>
-<div id="tab-travel" class="tab-panel">
-  <div class="mini-note">✈️ Reizen — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">✈️ Travel — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-travel"></div>
-</div>
-<div id="tab-food" class="tab-panel">
-  <div class="mini-note">🍽️ Eten — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🍽️ Food — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-food"></div>
-</div>
-<div id="tab-health" class="tab-panel">
-  <div class="mini-note">🏥 Gezondheid — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🏥 Health — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-health"></div>
-</div>
-<div id="tab-shopping" class="tab-panel">
-  <div class="mini-note">🛒 Winkelen — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🛒 Shopping — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-shopping"></div>
-</div>
-<div id="tab-nature" class="tab-panel">
-  <div class="mini-note">🌿 Natuur — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🌿 Nature — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-nature"></div>
-</div>
-<div id="tab-home" class="tab-panel">
-  <div class="mini-note">🏠 Thuis — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🏠 Home — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-home"></div>
-</div>
-<div id="tab-school" class="tab-panel">
-  <div class="mini-note">🎓 School — minimale preview (verhaal-intro + dialoog komt later)<div class="mini-note-en">🎓 School — minimal preview (story intro + dialogue coming later)</div></div>
-  <div class="card-grid" id="mini-grid-school"></div>
-</div>
+<div id="tab-connectors" class="tab-panel"><div id="mini-container-connectors"></div></div>
+<div id="tab-pronouns" class="tab-panel"><div id="mini-container-pronouns"></div></div>
+<div id="tab-adjectives" class="tab-panel"><div id="mini-container-adjectives"></div></div>
+<div id="tab-determiners" class="tab-panel"><div id="mini-container-determiners"></div></div>
+<div id="tab-prepositions" class="tab-panel"><div id="mini-container-prepositions"></div></div>
+<div id="tab-numbers" class="tab-panel"><div id="mini-container-numbers"></div></div>
+<div id="tab-nouns" class="tab-panel"><div id="mini-container-nouns"></div></div>
+<div id="tab-phrases" class="tab-panel"><div id="mini-container-phrases"></div></div>
+<div id="tab-space" class="tab-panel"><div id="mini-container-space"></div></div>
+<div id="tab-sea" class="tab-panel"><div id="mini-container-sea"></div></div>
+<div id="tab-birds" class="tab-panel"><div id="mini-container-birds"></div></div>
+<div id="tab-travel" class="tab-panel"><div id="mini-container-travel"></div></div>
+<div id="tab-food" class="tab-panel"><div id="mini-container-food"></div></div>
+<div id="tab-health" class="tab-panel"><div id="mini-container-health"></div></div>
+<div id="tab-shopping" class="tab-panel"><div id="mini-container-shopping"></div></div>
+<div id="tab-nature" class="tab-panel"><div id="mini-container-nature"></div></div>
+<div id="tab-home" class="tab-panel"><div id="mini-container-home"></div></div>
+<div id="tab-school" class="tab-panel"><div id="mini-container-school"></div></div>
 
 <script>
 // ─── SHARED UI UTILITIES ───
@@ -1138,7 +1076,7 @@ window.APP = {
 // ─── HIGHLIGHT ENGINE ───
 const HIGHLIGHT_RULES = [
   { words: ['niet','geen','nooit','nergens','niemand','niets','noch'], cls: 'hl-neg' },
-  { words: ['omdat','maar','terwijl','dus','want','hoewel','zodat','tenzij','nadat','voordat','zodra','toen','als','wanneer','dat','en','of','toch'], cls: 'hl-conn' },
+  { words: ['omdat','maar','terwijl','dus','want','hoewel','zodat','tenzij','nadat','voordat','zodra','toen','als','wanneer','dat','en','of','toch','ook','zelfs','daarom','daarna','daarvoor','daarmee','hiermee','hierin','hierover','hiervoor','echter','bovendien','tenslotte'], cls: 'hl-conn' },
   { words: ['meer','minder','beter','slechter','groter','kleiner','sneller','langzamer','mooier','lelijker','duurder','goedkoper','ouder','jonger','vroeger','later','harder','zachter','verder','dichterbij','het beste','het grootst','het snelst','het mooist','het meest','het minst'], cls: 'hl-comp' },
   { words: ['me','mij','je','jou','hem','haar','ons','jullie','ze','hen','hun','iemand','iets','ergens'], cls: 'hl-pron' },
   { words: ['mijn','jouw','zijn','ons','onze','jullie','hun'], cls: 'hl-poss' },
@@ -3560,35 +3498,275 @@ renderVerbs();
 // every tab. Not the final tab content — see CLAUDE.md roadmap for the real
 // per-tab designs (grammar tables, story intros, dialogues).
 window.MINI_TABS = {
-  connectors: { title: 'Connectors', items: [
-    { emoji: '🔗', nl: 'omdat', en: 'because', sentences: [
-      { nl: 'Ik ga naar huis omdat het laat is.', en: "I'm going home because it's late.", tags: ['omdat'], visuals: ['👤','🏠','🌙'] },
-      { nl: 'Lars werkt hard omdat hij het project wil afmaken.', en: 'Lars works hard because he wants to finish the project.', tags: ['omdat'], visuals: ['👨','💪','📋'] }
+  connectors: { title: 'Connectors', sections: [
+    { heading: 'Coordinating Connectors', note: 'no word order change', items: [
+      { emoji: '🔗', nl: 'en', en: 'and', sentences: [
+        { nl: 'Lars werkt en Lotte belt een klant.', en: 'Lars works and Lotte calls a client.', tags: ['en'], visuals: ['👨','💼','👩','📞'] }
+      ]},
+      { emoji: '🔀', nl: 'maar', en: 'but', sentences: [
+        { nl: 'Ik wil koffie, maar er is geen melk.', en: 'I want coffee, but there is no milk.', tags: ['maar'], visuals: ['☕','🚫','🥛'] }
+      ]},
+      { emoji: '❓', nl: 'of', en: 'or', sentences: [
+        { nl: 'Wil je thee of koffie?', en: 'Do you want tea or coffee?', tags: ['of'], visuals: ['🍵','❓','☕'] }
+      ]},
+      { emoji: '💭', nl: 'want', en: 'because / for', sentences: [
+        { nl: 'Ik neem de trein, want mijn auto is kapot.', en: "I'm taking the train, because my car is broken.", tags: ['want'], visuals: ['🚆','🚗','💥'] }
+      ]},
+      { emoji: '➡️', nl: 'dus', en: 'so', sentences: [
+        { nl: 'Het regent, dus ik neem een paraplu.', en: "It's raining, so I'm taking an umbrella.", tags: ['dus'], visuals: ['🌧️','☂️'] }
+      ]},
+      { emoji: '🔄', nl: 'toch', en: 'still / anyway', sentences: [
+        { nl: 'Ze zei van niet, maar ze deed het toch.', en: 'She said she wouldn\'t, but she did it anyway.', tags: ['maar','toch'], visuals: ['👩','🚫','✅'] }
+      ]},
+      { emoji: '➕', nl: 'ook', en: 'also', sentences: [
+        { nl: 'Lars werkt hard, en Thomas werkt ook hard.', en: 'Lars works hard, and Thomas also works hard.', tags: ['en','ook'], visuals: ['👨','💪','👨'] }
+      ]},
+      { emoji: '⚡', nl: 'zelfs', en: 'even', sentences: [
+        { nl: 'Zelfs Thomas begreep de vraag niet.', en: "Even Thomas didn't understand the question.", tags: ['zelfs'], visuals: ['👨','❓'] }
+      ]}
     ]},
-    { emoji: '🔀', nl: 'maar', en: 'but', sentences: [
-      { nl: 'Ik wil koffie, maar er is geen melk.', en: 'I want coffee, but there is no milk.', tags: ['maar'], visuals: ['☕','🚫','🥛'] },
-      { nl: 'Sita is klein, maar ze is heel sterk.', en: 'Sita is small, but she is very strong.', tags: ['maar'], visuals: ['👧','💪'] }
+    { heading: 'Subordinating Connectors', note: 'the verb moves to the end of the clause', items: [
+      { emoji: '🔗', nl: 'omdat', en: 'because', sentences: [
+        { nl: 'Ik ga naar huis omdat het laat is.', en: "I'm going home because it's late.", tags: ['omdat'], visuals: ['👤','🏠','🌙'] }
+      ]},
+      { emoji: '🤔', nl: 'als', en: 'if', sentences: [
+        { nl: 'Als het regent, blijven we binnen.', en: 'If it rains, we stay inside.', tags: ['als'], visuals: ['🌧️','🏠'] }
+      ]},
+      { emoji: '⏰', nl: 'wanneer', en: 'when', sentences: [
+        { nl: 'Ik weet niet wanneer de trein vertrekt.', en: "I don't know when the train departs.", tags: ['wanneer'], visuals: ['❓','🚆'] }
+      ]},
+      { emoji: '💬', nl: 'dat', en: 'that', sentences: [
+        { nl: 'Ik denk dat Lars gelijk heeft.', en: 'I think that Lars is right.', tags: ['dat'], visuals: ['💭','👨','✅'] }
+      ]},
+      { emoji: '⏳', nl: 'terwijl', en: 'while', sentences: [
+        { nl: 'Lotte belt terwijl Lars het rapport leest.', en: 'Lotte calls while Lars reads the report.', tags: ['terwijl'], visuals: ['👩','📞','👨','📄'] }
+      ]},
+      { emoji: '🌗', nl: 'hoewel', en: 'although', sentences: [
+        { nl: 'Hoewel het regent, gaan we toch fietsen.', en: "Although it's raining, we're going cycling anyway.", tags: ['hoewel','toch'], visuals: ['🌧️','🚲'] }
+      ]},
+      { emoji: '🎯', nl: 'zodat', en: 'so that', sentences: [
+        { nl: 'Ik stuur de e-mail vroeg, zodat je genoeg tijd hebt.', en: 'I send the email early, so that you have enough time.', tags: ['zodat'], visuals: ['📧','⏰'] }
+      ]},
+      { emoji: '🚫', nl: 'tenzij', en: 'unless', sentences: [
+        { nl: 'We gaan wandelen, tenzij het te hard regent.', en: "We're going for a walk, unless it rains too hard.", tags: ['tenzij'], visuals: ['🚶','🌧️'] }
+      ]},
+      { emoji: '⏭️', nl: 'nadat', en: 'after', sentences: [
+        { nl: 'We gaan koffie drinken nadat de vergadering afgelopen is.', en: "We'll drink coffee after the meeting is over.", tags: ['nadat'], visuals: ['☕','📅','✅'] }
+      ]},
+      { emoji: '⏮️', nl: 'voordat', en: 'before', sentences: [
+        { nl: 'Ik lees mijn e-mails voordat ik naar kantoor ga.', en: 'I read my emails before I go to the office.', tags: ['voordat'], visuals: ['📧','🏢'] }
+      ]},
+      { emoji: '⚡', nl: 'zodra', en: 'as soon as', sentences: [
+        { nl: 'Ik bel je zodra ik thuis ben.', en: "I'll call you as soon as I'm home.", tags: ['zodra'], visuals: ['📞','🏠'] }
+      ]},
+      { emoji: '🕰️', nl: 'toen', en: 'when (past)', sentences: [
+        { nl: 'Toen ik aankwam, was de vergadering al begonnen.', en: 'When I arrived, the meeting had already started.', tags: ['toen'], visuals: ['👤','📅','✅'] }
+      ]}
     ]},
-    { emoji: '➡️', nl: 'dus', en: 'so', sentences: [
-      { nl: 'Het regent, dus ik neem een paraplu.', en: "It's raining, so I'm taking an umbrella.", tags: ['dus'], visuals: ['🌧️','☂️'] },
-      { nl: 'De vergadering is voorbij, dus Lars gaat naar huis.', en: 'The meeting is over, so Lars goes home.', tags: ['dus'], visuals: ['📅','✅','👨','🏠'] }
+    { heading: 'Linking Adverbs', note: '', items: [
+      { emoji: '🎯', nl: 'daarom', en: 'therefore', sentences: [
+        { nl: 'Het project is dringend; daarom werkt Lars dit weekend.', en: 'The project is urgent; therefore Lars is working this weekend.', tags: ['daarom'], visuals: ['📋','❗','👨'] }
+      ]},
+      { emoji: '➡️', nl: 'daarna', en: 'after that', sentences: [
+        { nl: 'We eten eerst; daarna gaan we werken.', en: 'We eat first; after that we go to work.', tags: ['daarna'], visuals: ['🍽️','➡️','💼'] }
+      ]},
+      { emoji: '⬅️', nl: 'daarvoor', en: 'before that', sentences: [
+        { nl: 'De vergadering begint om tien uur; daarvoor drinken we koffie.', en: 'The meeting starts at ten; before that we drink coffee.', tags: ['daarvoor'], visuals: ['📅','⬅️','☕'] }
+      ]},
+      { emoji: '🤝', nl: 'daarmee', en: 'with that', sentences: [
+        { nl: 'Lars heeft een nieuw plan; daarmee lost hij het probleem op.', en: 'Lars has a new plan; with that he solves the problem.', tags: ['daarmee'], visuals: ['👨','💡','✅'] }
+      ]},
+      { emoji: '✅', nl: 'hiermee', en: 'with this', sentences: [
+        { nl: 'Hiermee is de vergadering afgelopen.', en: 'With this, the meeting is over.', tags: ['hiermee'], visuals: ['✅','📅'] }
+      ]},
+      { emoji: '📄', nl: 'hierin', en: 'in this', sentences: [
+        { nl: 'Hierin staat alle informatie over het project.', en: 'In this is all the information about the project.', tags: ['hierin'], visuals: ['📄','📋'] }
+      ]},
+      { emoji: '💬', nl: 'hierover', en: 'about this', sentences: [
+        { nl: 'We moeten hierover praten.', en: 'We need to talk about this.', tags: ['hierover'], visuals: ['👥','💬'] }
+      ]},
+      { emoji: '🙏', nl: 'hiervoor', en: 'for this', sentences: [
+        { nl: 'Hiervoor wil ik je bedanken.', en: 'For this I want to thank you.', tags: ['hiervoor'], visuals: ['🙏','👤'] }
+      ]},
+      { emoji: '⚖️', nl: 'echter', en: 'however', sentences: [
+        { nl: 'Lars wil vroeg vertrekken; Lotte wil echter nog blijven.', en: 'Lars wants to leave early; Lotte, however, wants to stay longer.', tags: ['echter'], visuals: ['👨','🚪','👩'] }
+      ]},
+      { emoji: '➕', nl: 'bovendien', en: 'moreover', sentences: [
+        { nl: 'Het rapport is klaar; bovendien is het heel goed geschreven.', en: 'The report is finished; moreover, it is very well written.', tags: ['bovendien'], visuals: ['📄','✅','⭐'] }
+      ]},
+      { emoji: '🏁', nl: 'tenslotte', en: 'finally', sentences: [
+        { nl: 'Tenslotte bedankte Lars iedereen voor hun werk.', en: 'Finally, Lars thanked everyone for their work.', tags: ['tenslotte'], visuals: ['🏁','👨','🙏'] }
+      ]}
+    ]},
+    { heading: 'Question Words', note: '', items: [
+      { emoji: '👤', nl: 'wie', en: 'who', sentences: [
+        { nl: 'Wie heeft de vergadering georganiseerd?', en: 'Who organized the meeting?', tags: [], visuals: ['❓','📅'] }
+      ]},
+      { emoji: '❓', nl: 'wat', en: 'what', sentences: [
+        { nl: 'Wat is het probleem?', en: 'What is the problem?', tags: [], visuals: ['❓','⚠️'] }
+      ]},
+      { emoji: '📍', nl: 'waar', en: 'where', sentences: [
+        { nl: 'Waar is Lars vandaag?', en: 'Where is Lars today?', tags: [], visuals: ['📍','👨'] }
+      ]},
+      { emoji: '⏰', nl: 'wanneer', en: 'when', sentences: [
+        { nl: 'Wanneer begint de vergadering?', en: 'When does the meeting start?', tags: ['wanneer'], visuals: ['⏰','📅'] }
+      ]},
+      { emoji: '🤷', nl: 'waarom', en: 'why', sentences: [
+        { nl: 'Waarom is Thomas nog niet hier?', en: "Why isn't Thomas here yet?", tags: [], visuals: ['🤷','👨'] }
+      ]},
+      { emoji: '🔧', nl: 'hoe', en: 'how', sentences: [
+        { nl: 'Hoe werkt dit nieuwe systeem?', en: 'How does this new system work?', tags: [], visuals: ['🔧','💻'] }
+      ]},
+      { emoji: '👉', nl: 'welke / welk', en: 'which', sentences: [
+        { nl: 'Welk rapport moet ik lezen?', en: 'Which report do I need to read?', tags: [], visuals: ['👉','📄'] }
+      ]},
+      { emoji: '🔢', nl: 'hoeveel', en: 'how much / many', sentences: [
+        { nl: 'Hoeveel tijd hebben we nog?', en: 'How much time do we have left?', tags: [], visuals: ['🔢','⏰'] }
+      ]},
+      { emoji: '⏳', nl: 'hoe lang', en: 'how long', sentences: [
+        { nl: 'Hoe lang duurt de vergadering?', en: 'How long does the meeting last?', tags: [], visuals: ['⏳','📅'] }
+      ]},
+      { emoji: '🗺️', nl: 'hoe ver', en: 'how far', sentences: [
+        { nl: 'Hoe ver is het kantoor van hier?', en: 'How far is the office from here?', tags: [], visuals: ['🗺️','🏢'] }
+      ]},
+      { emoji: '🔁', nl: 'hoe vaak', en: 'how often', sentences: [
+        { nl: 'Hoe vaak vergaderen jullie?', en: 'How often do you all have meetings?', tags: [], visuals: ['🔁','📅'] }
+      ]}
+    ]}
+  ], wordOrderDemo: {
+    main: { nl: ['Lars', 'werkt', 'hard.'], verbIdx: 1 },
+    sub: { nl: ['...omdat', 'Lars', 'hard', 'werkt.'], verbIdx: 3, connIdx: 0 }
+  }},
+  pronouns: { title: 'Pronouns', sections: [
+    { heading: 'Subject', note: '', items: [
+      { emoji: '👤', nl: 'ik', en: 'I', sentences: [
+        { nl: 'Ik werk vandaag thuis.', en: 'I work from home today.', tags: [], visuals: ['👤','🏠'] }
+      ]},
+      { emoji: '👉', nl: 'je / jij', en: 'you (informal)', sentences: [
+        { nl: 'Jij bent altijd op tijd.', en: 'You are always on time.', tags: [], visuals: ['👉','⏰'] }
+      ]},
+      { emoji: '👨', nl: 'hij', en: 'he', sentences: [
+        { nl: 'Hij leidt het project.', en: 'He leads the project.', tags: [], visuals: ['👨','📋'] }
+      ]},
+      { emoji: '👩', nl: 'zij', en: 'she', sentences: [
+        { nl: 'Zij werkt in Antwerpen.', en: 'She works in Antwerp.', tags: [], visuals: ['👩','🏙️'] }
+      ]},
+      { emoji: '📦', nl: 'het', en: 'it', sentences: [
+        { nl: 'Het is bijna klaar.', en: 'It is almost finished.', tags: [], visuals: ['📦','✅'] }
+      ]},
+      { emoji: '👥', nl: 'wij / we', en: 'we', sentences: [
+        { nl: 'Wij hebben een nieuw plan.', en: 'We have a new plan.', tags: [], visuals: ['👥','💡'] }
+      ]},
+      { emoji: '👥', nl: 'jullie', en: 'you (plural)', sentences: [
+        { nl: 'Jullie doen goed werk.', en: 'You all do good work.', tags: [], visuals: ['👥','⭐'] }
+      ]},
+      { emoji: '👥', nl: 'zij', en: 'they', sentences: [
+        { nl: 'Zij komen morgen langs.', en: 'They are coming by tomorrow.', tags: [], visuals: ['👥','🌅'] }
+      ]},
+      { emoji: '🎩', nl: 'u', en: 'you (formal)', sentences: [
+        { nl: 'Kunt u mij helpen?', en: 'Could you help me?', tags: ['mij'], visuals: ['🎩','❓'] }
+      ]}
+    ]},
+    { heading: 'Object', note: '', items: [
+      { emoji: '🙋', nl: 'me / mij', en: 'me', sentences: [
+        { nl: 'Kun je me even helpen?', en: 'Can you help me for a moment?', tags: ['me'], visuals: ['🙋','🤝'] }
+      ]},
+      { emoji: '👉', nl: 'je / jou', en: 'you', sentences: [
+        { nl: 'Ik zag jou gisteren op kantoor.', en: 'I saw you at the office yesterday.', tags: ['jou'], visuals: ['👀','👉','🏢'] }
+      ]},
+      { emoji: '👨', nl: 'hem', en: 'him', sentences: [
+        { nl: 'Ik bel hem straks terug.', en: "I'll call him back later.", tags: ['hem'], visuals: ['📞','👨'] }
+      ]},
+      { emoji: '👩', nl: 'haar', en: 'her', sentences: [
+        { nl: 'Ik zie haar op kantoor.', en: 'I see her at the office.', tags: ['haar'], visuals: ['👀','👩','🏢'] }
+      ]},
+      { emoji: '👥', nl: 'ons', en: 'us', sentences: [
+        { nl: 'De baas nodigt ons uit voor een etentje.', en: 'The boss invites us for dinner.', tags: ['ons'], visuals: ['👔','👥','🍽️'] }
+      ]},
+      { emoji: '👥', nl: 'jullie', en: 'you all', sentences: [
+        { nl: 'Ik stuur jullie het rapport morgen.', en: "I'll send you all the report tomorrow.", tags: ['jullie'], visuals: ['📧','👥'] }
+      ]},
+      { emoji: '👥', nl: 'ze / hen / hun', en: 'them', sentences: [
+        { nl: 'Ik heb hen niet meer gezien.', en: "I haven't seen them anymore.", tags: ['hen'], visuals: ['👀','👥'] }
+      ]}
+    ]},
+    { heading: 'Possessive', note: 'ons for het-words, onze for de-words', items: [
+      { emoji: '👤', nl: 'mijn', en: 'my', sentences: [
+        { nl: 'Mijn kantoor is op de derde verdieping.', en: 'My office is on the third floor.', tags: ['mijn'], visuals: ['👤','🏢'] }
+      ]},
+      { emoji: '👉', nl: 'jouw / je', en: 'your', sentences: [
+        { nl: 'Is dit jouw laptop?', en: 'Is this your laptop?', tags: [], visuals: ['👉','💻'] }
+      ]},
+      { emoji: '👨', nl: 'zijn', en: 'his', sentences: [
+        { nl: 'Zijn rapport is heel goed.', en: 'His report is very good.', tags: ['zijn'], visuals: ['👨','📄','⭐'] }
+      ]},
+      { emoji: '👩', nl: 'haar', en: 'her', sentences: [
+        { nl: 'Haar idee was briljant.', en: 'Her idee was brilliant.', tags: ['haar'], visuals: ['👩','💡'] }
+      ]},
+      { emoji: '👥', nl: 'ons / onze', en: 'our', sentences: [
+        { nl: 'Onze vergadering begint om negen uur.', en: 'Our meeting starts at nine.', tags: ['onze'], visuals: ['👥','📅'] }
+      ]},
+      { emoji: '👥', nl: 'jullie', en: 'your (plural)', sentences: [
+        { nl: 'Is dit jullie project?', en: "Is this your (all) project?", tags: ['jullie'], visuals: ['👥','📋'] }
+      ]},
+      { emoji: '👥', nl: 'hun', en: 'their', sentences: [
+        { nl: 'Hun kantoor is heel modern.', en: 'Their office is very modern.', tags: ['hun'], visuals: ['👥','🏢'] }
+      ]}
+    ]},
+    { heading: 'Reflexive', note: '', items: [
+      { emoji: '🪞', nl: 'me', en: 'myself', sentences: [
+        { nl: 'Ik was me elke ochtend.', en: 'I wash myself every morning.', tags: ['me'], visuals: ['👤','🪞'] }
+      ]},
+      { emoji: '🪞', nl: 'je', en: 'yourself', sentences: [
+        { nl: 'Was je elke ochtend?', en: 'Do you wash yourself every morning?', tags: [], visuals: ['👉','🪞'] }
+      ]},
+      { emoji: '🪞', nl: 'zich', en: 'himself / herself / itself', sentences: [
+        { nl: 'Hij wast zich elke ochtend.', en: 'He washes himself every morning.', tags: [], visuals: ['👨','🪞'] }
+      ]},
+      { emoji: '🪞', nl: 'ons', en: 'ourselves', sentences: [
+        { nl: 'Wij wassen ons elke ochtend.', en: 'We wash ourselves every morning.', tags: ['ons'], visuals: ['👥','🪞'] }
+      ]},
+      { emoji: '🪞', nl: 'je (jullie)', en: 'yourselves', sentences: [
+        { nl: 'Wassen jullie je elke ochtend?', en: 'Do you all wash yourselves every morning?', tags: [], visuals: ['👥','🪞'] }
+      ]},
+      { emoji: '🪞', nl: 'zich (u)', en: 'yourself (formal)', sentences: [
+        { nl: 'Wast u zich elke ochtend?', en: 'Do you (formal) wash yourself every morning?', tags: [], visuals: ['🎩','🪞'] }
+      ]}
+    ]},
+    { heading: 'Indefinite', note: '', items: [
+      { emoji: '❓', nl: 'iemand', en: 'someone', sentences: [
+        { nl: 'Is er iemand thuis?', en: 'Is anyone home?', tags: ['iemand'], visuals: ['❓','👤','🏠'] }
+      ]},
+      { emoji: '🚫', nl: 'niemand', en: 'no one', sentences: [
+        { nl: 'Niemand weet het antwoord.', en: 'No one knows the answer.', tags: [], visuals: ['🚫','👤','❓'] }
+      ]},
+      { emoji: '💭', nl: 'iets', en: 'something', sentences: [
+        { nl: 'Ik moet je iets vertellen.', en: 'I need to tell you something.', tags: ['iets'], visuals: ['💭','👉'] }
+      ]},
+      { emoji: '🚫', nl: 'niets', en: 'nothing', sentences: [
+        { nl: 'Er is niets meer te doen.', en: 'There is nothing left to do.', tags: [], visuals: ['🚫','✅'] }
+      ]},
+      { emoji: '📍', nl: 'ergens', en: 'somewhere', sentences: [
+        { nl: 'Ik heb mijn sleutels ergens laten liggen.', en: 'I left my keys somewhere.', tags: ['ergens'], visuals: ['🔑','📍'] }
+      ]},
+      { emoji: '🚫', nl: 'nergens', en: 'nowhere', sentences: [
+        { nl: 'Ik kan mijn telefoon nergens vinden.', en: "I can't find my phone anywhere.", tags: [], visuals: ['📱','🚫'] }
+      ]},
+      { emoji: '⏳', nl: 'ooit', en: 'ever', sentences: [
+        { nl: 'Heb je ooit in Gent gewerkt?', en: 'Have you ever worked in Ghent?', tags: [], visuals: ['⏳','🏙️'] }
+      ]},
+      { emoji: '🚫', nl: 'nooit', en: 'never', sentences: [
+        { nl: 'Ik kom nooit te laat.', en: 'I am never late.', tags: [], visuals: ['🚫','⏰'] }
+      ]},
+      { emoji: '🔁', nl: 'altijd', en: 'always', sentences: [
+        { nl: 'Lars is altijd vriendelijk.', en: 'Lars is always friendly.', tags: [], visuals: ['🔁','👨','😊'] }
+      ]},
+      { emoji: '🌍', nl: 'overal', en: 'everywhere', sentences: [
+        { nl: 'Ze zoeken overal naar de sleutels.', en: 'They are looking for the keys everywhere.', tags: [], visuals: ['🌍','🔑'] }
+      ]}
     ]}
   ]},
-  pronouns: { title: 'Pronouns', items: [
-    { emoji: '👨', nl: 'hem', en: 'him', sentences: [
-      { nl: 'Ik geef hem het rapport.', en: 'I give him the report.', tags: ['hem'], visuals: ['👤','📄','👨'] },
-      { nl: 'Ken je hem al lang?', en: 'Have you known him for long?', tags: ['hem'], visuals: ['👤','👨','❓'] }
-    ]},
-    { emoji: '👩', nl: 'haar', en: 'her', sentences: [
-      { nl: 'Ik bel haar morgen.', en: 'I will call her tomorrow.', tags: ['haar'], visuals: ['📞','👩','🌅'] },
-      { nl: 'Ik zie haar op kantoor.', en: 'I see her at the office.', tags: ['haar'], visuals: ['👀','👩','🏢'] }
-    ]},
-    { emoji: '❓', nl: 'iemand', en: 'someone', sentences: [
-      { nl: 'Is er iemand thuis?', en: 'Is anyone home?', tags: ['iemand'], visuals: ['❓','👤','🏠'] },
-      { nl: 'Iemand heeft de deur open gelaten.', en: 'Someone left the door open.', tags: ['iemand'], visuals: ['👤','🚪'] }
-    ]}
-  ]},
-  adjectives: { title: 'Adjectives', items: [
+  adjectives: { title: 'Adjectives', sections: [{ heading: null, note: '', items: [
     { emoji: '📏', nl: 'groot', en: 'big', sentences: [
       { nl: 'Het huis is heel groot.', en: 'The house is very big.', tags: [], visuals: ['🏠','📏'] },
       { nl: 'Hanuman is groter dan Krishna.', en: 'Hanuman is bigger than Krishna.', tags: ['comparative'], visuals: ['👦','📏','👦'] }
@@ -3601,8 +3779,8 @@ window.MINI_TABS = {
       { nl: 'Ik ben blij met het resultaat.', en: 'I am happy with the result.', tags: [], visuals: ['😊','🏆'] },
       { nl: 'Sita is blij omdat het weekend is.', en: "Sita is happy because it's the weekend.", tags: ['omdat'], visuals: ['👧','😊','📅'] }
     ]}
-  ]},
-  determiners: { title: 'Determiners', items: [
+  ]}]},
+  determiners: { title: 'Determiners', sections: [{ heading: null, note: '', items: [
     { emoji: '🚫', nl: 'geen', en: 'no / none', sentences: [
       { nl: 'Ik heb geen tijd vandaag.', en: 'I have no time today.', tags: [], visuals: ['👤','🚫','⏰'] },
       { nl: 'Er is geen brood meer.', en: 'There is no more bread.', tags: [], visuals: ['🚫','🍞'] }
@@ -3615,8 +3793,8 @@ window.MINI_TABS = {
       { nl: 'Beide kinderen spelen buiten.', en: 'Both children are playing outside.', tags: [], visuals: ['🤝','🧒','🌳'] },
       { nl: 'We hebben beide opties bekeken.', en: 'We looked at both options.', tags: [], visuals: ['🤝','👥'] }
     ]}
-  ]},
-  prepositions: { title: 'Prepositions', items: [
+  ]}]},
+  prepositions: { title: 'Prepositions', sections: [{ heading: null, note: '', items: [
     { emoji: '📥', nl: 'in', en: 'in', sentences: [
       { nl: 'Het boek ligt in de tas.', en: 'The book is in the bag.', tags: [], visuals: ['📖','📥','🎒'] },
       { nl: 'Lars werkt in Gent.', en: 'Lars works in Ghent.', tags: [], visuals: ['👨','📥','🏙️'] }
@@ -3629,8 +3807,8 @@ window.MINI_TABS = {
       { nl: 'Ik werk met Lotte samen.', en: 'I work together with Lotte.', tags: [], visuals: ['👤','🤝','👩'] },
       { nl: 'Sita speelt met Hanuman.', en: 'Sita plays with Hanuman.', tags: [], visuals: ['👧','🤝','👦'] }
     ]}
-  ]},
-  numbers: { title: 'Numbers & Time', items: [
+  ]}]},
+  numbers: { title: 'Numbers & Time', sections: [{ heading: null, note: '', items: [
     { emoji: '3️⃣', nl: 'drie', en: 'three', sentences: [
       { nl: 'Ik heb drie vergaderingen vandaag.', en: 'I have three meetings today.', tags: [], visuals: ['3️⃣','📅'] },
       { nl: 'Er zijn drie kinderen in de tuin.', en: 'There are three children in the garden.', tags: [], visuals: ['3️⃣','🧒','🌳'] }
@@ -3643,8 +3821,8 @@ window.MINI_TABS = {
       { nl: 'De vergadering is op maandag.', en: 'The meeting is on Monday.', tags: [], visuals: ['📅','👥'] },
       { nl: 'Maandag is mijn eerste werkdag.', en: 'Monday is my first workday.', tags: [], visuals: ['📅','👤','💼'] }
     ]}
-  ]},
-  nouns: { title: 'Nouns', items: [
+  ]}]},
+  nouns: { title: 'Nouns', sections: [{ heading: null, note: '', items: [
     { emoji: '🗓️', nl: 'vergadering', en: 'meeting', sentences: [
       { nl: 'De vergadering duurt een uur.', en: 'The meeting lasts an hour.', tags: [], visuals: ['🗓️','⏰'] },
       { nl: 'Lotte leidt de vergadering.', en: 'Lotte leads the meeting.', tags: [], visuals: ['👩','🗓️'] }
@@ -3657,8 +3835,8 @@ window.MINI_TABS = {
       { nl: 'Ik ga met de fiets naar het werk.', en: 'I go to work by bicycle.', tags: [], visuals: ['👤','🚲','🏢'] },
       { nl: 'Krishna heeft een nieuwe fiets.', en: 'Krishna has a new bicycle.', tags: [], visuals: ['👦','🚲'] }
     ]}
-  ]},
-  phrases: { title: 'Phrases', items: [
+  ]}]},
+  phrases: { title: 'Phrases', sections: [{ heading: null, note: '', items: [
     { emoji: '👋', nl: 'tot ziens', en: 'goodbye', sentences: [
       { nl: 'Tot ziens, tot morgen!', en: 'Goodbye, see you tomorrow!', tags: [], visuals: ['👋','🌅'] },
       { nl: 'Ze zei tot ziens en ging naar huis.', en: 'She said goodbye and went home.', tags: [], visuals: ['👩','👋','🏠'] }
@@ -3671,8 +3849,8 @@ window.MINI_TABS = {
       { nl: 'Veel succes met je presentatie!', en: 'Good luck with your presentation!', tags: [], visuals: ['🍀','🎤'] },
       { nl: 'Lars wenste Thomas veel succes.', en: 'Lars wished Thomas good luck.', tags: [], visuals: ['👨','🍀','👨'] }
     ]}
-  ]},
-  space: { title: 'Space', items: [
+  ]}]},
+  space: { title: 'Space', sections: [{ heading: null, note: '', items: [
     { emoji: '🚀', nl: 'raket', en: 'rocket', sentences: [
       { nl: 'De raket vliegt naar de ruimte.', en: 'The rocket flies into space.', tags: [], visuals: ['🚀','🌌'] },
       { nl: 'Rakesh bouwt een model van een raket.', en: 'Rakesh builds a model of a rocket.', tags: [], visuals: ['👦','🚀'] }
@@ -3685,8 +3863,8 @@ window.MINI_TABS = {
       { nl: 'De maan schijnt vannacht heel fel.', en: 'The moon is shining very brightly tonight.', tags: [], visuals: ['🌙','✨'] },
       { nl: 'Sunita kijkt naar de maan.', en: 'Sunita looks at the moon.', tags: [], visuals: ['👩','🌙'] }
     ]}
-  ]},
-  sea: { title: 'Sea', items: [
+  ]}]},
+  sea: { title: 'Sea', sections: [{ heading: null, note: '', items: [
     { emoji: '🐟', nl: 'vis', en: 'fish', sentences: [
       { nl: 'Arjun vangt een grote vis.', en: 'Arjun catches a big fish.', tags: [], visuals: ['👦','🐟'] },
       { nl: 'De vis zwemt snel weg.', en: 'The fish swims away quickly.', tags: [], visuals: ['🐟','💨'] }
@@ -3699,8 +3877,8 @@ window.MINI_TABS = {
       { nl: 'We varen met de boot naar het eiland.', en: 'We sail to the island by boat.', tags: [], visuals: ['🚤','🏝️'] },
       { nl: 'Vikram repareert de boot.', en: 'Vikram repairs the boat.', tags: [], visuals: ['👦','🚤'] }
     ]}
-  ]},
-  birds: { title: 'Birds', items: [
+  ]}]},
+  birds: { title: 'Birds', sections: [{ heading: null, note: '', items: [
     { emoji: '🐦', nl: 'vogel', en: 'bird', sentences: [
       { nl: 'Een kleine vogel zingt in de boom.', en: 'A small bird sings in the tree.', tags: [], visuals: ['🐦','🌳'] },
       { nl: 'Priya voedt de vogel elke ochtend.', en: 'Priya feeds the bird every morning.', tags: [], visuals: ['👧','🐦'] }
@@ -3713,8 +3891,8 @@ window.MINI_TABS = {
       { nl: 'De vogel beweegt zijn vleugel.', en: 'The bird moves its wing.', tags: [], visuals: ['🐦','🪶'] },
       { nl: 'Vikram tekent een vogel met grote vleugels.', en: 'Vikram draws a bird with big wings.', tags: [], visuals: ['👦','🐦','🪶'] }
     ]}
-  ]},
-  travel: { title: 'Travel', items: [
+  ]}]},
+  travel: { title: 'Travel', sections: [{ heading: null, note: '', items: [
     { emoji: '✈️', nl: 'vliegtuig', en: 'airplane', sentences: [
       { nl: 'Het vliegtuig vertrekt om acht uur.', en: 'The airplane departs at eight.', tags: [], visuals: ['✈️','🕗'] },
       { nl: 'Lars stapt in het vliegtuig.', en: 'Lars boards the airplane.', tags: [], visuals: ['👨','✈️'] }
@@ -3727,8 +3905,8 @@ window.MINI_TABS = {
       { nl: 'Vergeet je paspoort niet!', en: "Don't forget your passport!", tags: [], visuals: ['🛂','❗'] },
       { nl: 'Lars laat zijn paspoort zien.', en: 'Lars shows his passport.', tags: [], visuals: ['👨','🛂'] }
     ]}
-  ]},
-  food: { title: 'Food', items: [
+  ]}]},
+  food: { title: 'Food', sections: [{ heading: null, note: '', items: [
     { emoji: '🍞', nl: 'brood', en: 'bread', sentences: [
       { nl: 'We eten vers brood bij de lunch.', en: 'We eat fresh bread at lunch.', tags: [], visuals: ['👥','🍞'] },
       { nl: 'Thomas koopt brood bij de bakker.', en: 'Thomas buys bread at the bakery.', tags: [], visuals: ['👨','🍞'] }
@@ -3741,8 +3919,8 @@ window.MINI_TABS = {
       { nl: 'De soep is heerlijk warm.', en: 'The soup is deliciously warm.', tags: [], visuals: ['🍲','🔥'] },
       { nl: 'Lars maakt soep voor het team.', en: 'Lars makes soup for the team.', tags: [], visuals: ['👨','🍲','👥'] }
     ]}
-  ]},
-  health: { title: 'Health', items: [
+  ]}]},
+  health: { title: 'Health', sections: [{ heading: null, note: '', items: [
     { emoji: '🩺', nl: 'dokter', en: 'doctor', sentences: [
       { nl: 'Emma gaat naar de dokter.', en: 'Emma goes to the doctor.', tags: [], visuals: ['👧','🩺'] },
       { nl: 'De dokter onderzoekt Noah.', en: 'The doctor examines Noah.', tags: [], visuals: ['🩺','👦'] }
@@ -3755,8 +3933,8 @@ window.MINI_TABS = {
       { nl: 'Noah is ziek en blijft thuis.', en: 'Noah is sick and stays home.', tags: [], visuals: ['👦','🤒','🏠'] },
       { nl: 'Julie was gisteren ziek maar voelt zich nu beter.', en: 'Julie was sick yesterday but feels better now.', tags: ['maar','comparative'], visuals: ['👧','🤒','😊'] }
     ]}
-  ]},
-  shopping: { title: 'Shopping', items: [
+  ]}]},
+  shopping: { title: 'Shopping', sections: [{ heading: null, note: '', items: [
     { emoji: '🛍️', nl: 'winkel', en: 'shop', sentences: [
       { nl: 'De winkel is om negen uur open.', en: 'The shop opens at nine.', tags: [], visuals: ['🛍️','🕘'] },
       { nl: 'Lotte gaat naar de winkel voor lunch.', en: 'Lotte goes to the shop for lunch.', tags: [], visuals: ['👩','🛍️'] }
@@ -3769,8 +3947,8 @@ window.MINI_TABS = {
       { nl: 'Er is vandaag korting op brood.', en: 'There is a discount on bread today.', tags: [], visuals: ['🏷️','🍞'] },
       { nl: 'Lars krijgt korting met zijn kaart.', en: 'Lars gets a discount with his card.', tags: [], visuals: ['👨','🏷️'] }
     ]}
-  ]},
-  nature: { title: 'Nature', items: [
+  ]}]},
+  nature: { title: 'Nature', sections: [{ heading: null, note: '', items: [
     { emoji: '🌳', nl: 'boom', en: 'tree', sentences: [
       { nl: 'De boom is heel hoog.', en: 'The tree is very tall.', tags: [], visuals: ['🌳','📏'] },
       { nl: 'Priya klimt in de boom.', en: 'Priya climbs the tree.', tags: [], visuals: ['👧','🌳'] }
@@ -3783,8 +3961,8 @@ window.MINI_TABS = {
       { nl: 'De berg is bedekt met sneeuw.', en: 'The mountain is covered with snow.', tags: [], visuals: ['⛰️','❄️'] },
       { nl: 'Vikram wandelt de berg op.', en: 'Vikram hikes up the mountain.', tags: [], visuals: ['👦','⛰️'] }
     ]}
-  ]},
-  home: { title: 'Home', items: [
+  ]}]},
+  home: { title: 'Home', sections: [{ heading: null, note: '', items: [
     { emoji: '🚪', nl: 'deur', en: 'door', sentences: [
       { nl: 'Krishna doet de deur open.', en: 'Krishna opens the door.', tags: [], visuals: ['👦','🚪'] },
       { nl: 'De deur is op slot.', en: 'The door is locked.', tags: [], visuals: ['🚪','🔒'] }
@@ -3797,8 +3975,8 @@ window.MINI_TABS = {
       { nl: 'Het is tijd om naar bed te gaan.', en: "It's time to go to bed.", tags: [], visuals: ['🕘','🛏️'] },
       { nl: 'Hanuman maakt zijn bed op.', en: 'Hanuman makes his bed.', tags: [], visuals: ['👦','🛏️'] }
     ]}
-  ]},
-  school: { title: 'School', items: [
+  ]}]},
+  school: { title: 'School', sections: [{ heading: null, note: '', items: [
     { emoji: '📖', nl: 'boek', en: 'book', sentences: [
       { nl: 'Emma leest een spannend boek.', en: 'Emma reads an exciting book.', tags: [], visuals: ['👧','📖'] },
       { nl: 'Het boek ligt op de tafel.', en: 'The book is on the table.', tags: [], visuals: ['📖','🪑'] }
@@ -3811,68 +3989,161 @@ window.MINI_TABS = {
       { nl: 'Julie maakt haar huiswerk na school.', en: 'Julie does her homework after school.', tags: [], visuals: ['👧','📝'] },
       { nl: 'Heb je je huiswerk af?', en: 'Have you finished your homework?', tags: [], visuals: ['📝','❓'] }
     ]}
-  ]}
+  ]}]}
 };
 
 const miniCellIdx = {};
 
+// Builds a tab from: an optional bilingual story intro, one or more named
+// sections of vocab cards (grammar tabs have several sections; topic tabs
+// have a single "Vocabulary" section), and an optional dialogue at the end.
 function renderMiniTab(tabKey) {
   const cfg = MINI_TABS[tabKey];
-  const grid = document.getElementById('mini-grid-' + tabKey);
-  if (!grid) return;
-  grid.innerHTML = '';
-  cfg.items.forEach((item, idx) => {
-    const card = document.createElement('div');
-    card.className = 'vocab-card';
-    card.id = 'mini_' + tabKey + '_' + idx;
-    const cid = 'mini_' + tabKey + '_' + idx;
-    card.innerHTML = `
-      <span class="card-emoji">${item.emoji}</span>
-      <div class="card-nl">${item.nl}</div>
-      <div class="card-en">${item.en}</div>
-      <div class="card-sent-wrap">
-        <div id="${cid}_sent"></div>
-        <div class="cell-cover" id="${cid}_cover" onclick="revealCell('${cid}')">
-          <span class="cover-word">${item.nl}</span>
-        </div>
+  const container = document.getElementById('mini-container-' + tabKey);
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (cfg.story) {
+    const sid = 'mini-story-' + tabKey;
+    const storyDiv = document.createElement('div');
+    storyDiv.className = 'story-intro';
+    storyDiv.onclick = () => toggleStory(sid);
+    storyDiv.innerHTML = `
+      <div class="story-intro-header">
+        <span class="story-intro-title">📖 ${cfg.title}</span>
+        <span class="story-intro-toggle" id="${sid}_tog">▲ collapse</span>
+      </div>
+      <div class="story-intro-body" id="${sid}_body">
+        <p>${cfg.story.nl}</p>
+        <p style="margin-top:6px;font-style:italic;opacity:.85">${cfg.story.en}</p>
       </div>`;
-    grid.appendChild(card);
-    renderMiniCardSentence(tabKey, idx);
+    container.appendChild(storyDiv);
+  }
+
+  if (cfg.wordOrderDemo) {
+    const wo = cfg.wordOrderDemo;
+    const demo = document.createElement('div');
+    demo.className = 'word-order-demo';
+    demo.style.marginBottom = '10px';
+    const mainHtml = wo.main.nl.map((w, i) => i === wo.main.verbIdx ? '<span class="wo-verb">' + w + '</span>' : w).join(' ');
+    const subHtml = wo.sub.nl.map((w, i) => {
+      if (i === wo.sub.verbIdx) return '<span class="wo-verb">' + w + '</span>';
+      if (i === wo.sub.connIdx) return '<span class="wo-conn">' + w + '</span>';
+      return w;
+    }).join(' ');
+    demo.innerHTML = 'Main clause: ' + mainHtml + '<br>With a subordinating connector: ' + subHtml + ' <span style="opacity:.7">(verb moves to the end)</span>';
+    container.appendChild(demo);
+  }
+
+  cfg.sections.forEach((section, sIdx) => {
+    if (section.heading) {
+      const hdr = document.createElement('div');
+      hdr.className = 'conn-type-header';
+      hdr.style.marginTop = sIdx === 0 ? '0' : '14px';
+      hdr.style.borderRadius = '6px';
+      hdr.innerHTML = section.heading + (section.note ? ' <span class="th-note" style="display:inline;text-transform:none;font-weight:400">— ' + section.note + '</span>' : '');
+      container.appendChild(hdr);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    grid.style.marginTop = '8px';
+    container.appendChild(grid);
+
+    section.items.forEach((item, idx) => {
+      const cid = 'mini_' + tabKey + '_' + sIdx + '_' + idx;
+      const card = document.createElement('div');
+      card.className = 'vocab-card';
+      card.innerHTML = `
+        <span class="card-emoji">${item.emoji}</span>
+        <div class="card-nl">${item.nl}</div>
+        <div class="card-en">${item.en}</div>
+        <div class="card-sent-wrap">
+          <div id="${cid}_sent"></div>
+          <div class="cell-cover" id="${cid}_cover" onclick="revealCell('${cid}')">
+            <span class="cover-word">${item.nl}</span>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+      renderMiniCardSentence(tabKey, sIdx, idx);
+    });
   });
+
+  if (cfg.dialogue) {
+    const dHdr = document.createElement('div');
+    dHdr.className = 'conn-type-header';
+    dHdr.style.marginTop = '14px';
+    dHdr.style.borderRadius = '6px';
+    dHdr.textContent = 'Dialogue';
+    container.appendChild(dHdr);
+
+    const dWrap = document.createElement('div');
+    dWrap.className = 'dialogue';
+    cfg.dialogue.forEach((line, li) => {
+      const lineId = 'mini-dl-' + tabKey + '-' + li;
+      const el = document.createElement('div');
+      el.className = 'dialogue-line';
+      el.id = lineId;
+      el.onclick = () => toggleDialogueLine(lineId);
+      el.innerHTML = `
+        <span class="dl-speaker">${line.emoji}</span>
+        <div class="dl-body">
+          <div class="dl-name">${line.name}</div>
+          <div class="dl-nl">${line.nl}</div>
+          <div class="dl-en" id="${lineId}_en">${line.en}</div>
+        </div>`;
+      dWrap.appendChild(el);
+    });
+    container.appendChild(dWrap);
+  }
+}
+
+function toggleDialogueLine(lineId) {
+  const line = document.getElementById(lineId);
+  const en = document.getElementById(lineId + '_en');
+  if (line) line.classList.toggle('open');
+  if (en) en.classList.toggle('show');
 }
 
 // Always-visible sentence, same as the verb tab — the card's size is fixed
 // from render time, so "Next" only swaps text, never the card's footprint.
-function renderMiniCardSentence(tabKey, idx) {
-  const cid = 'mini_' + tabKey + '_' + idx;
+function renderMiniCardSentence(tabKey, sIdx, idx) {
+  const cid = 'mini_' + tabKey + '_' + sIdx + '_' + idx;
   const sentDiv = document.getElementById(cid + '_sent');
   if (!sentDiv) return;
 
-  const sents = MINI_TABS[tabKey].items[idx].sentences;
+  const sents = MINI_TABS[tabKey].sections[sIdx].items[idx].sentences;
   if (miniCellIdx[cid] === undefined) miniCellIdx[cid] = 0;
-  const sIdx = miniCellIdx[cid] % sents.length;
+  const localIdx = miniCellIdx[cid] % sents.length;
 
-  sentDiv.innerHTML = buildSentenceCard(sents[sIdx], sIdx, sents.length, cid, {
-    next:      `nextMiniCard('${tabKey}',${idx})`,
+  sentDiv.innerHTML = buildSentenceCard(sents[localIdx], localIdx, sents.length, cid, {
+    next:      `nextMiniCard('${tabKey}',${sIdx},${idx})`,
     translate: `toggleTranslate('${cid}')`,
     recover:   `recoverCell('${cid}')`
   });
 }
 
-function nextMiniCard(tabKey, idx) {
-  const cid = 'mini_' + tabKey + '_' + idx;
+function nextMiniCard(tabKey, sIdx, idx) {
+  const cid = 'mini_' + tabKey + '_' + sIdx + '_' + idx;
   miniCellIdx[cid] = (miniCellIdx[cid] || 0) + 1;
-  renderMiniCardSentence(tabKey, idx);
+  renderMiniCardSentence(tabKey, sIdx, idx);
 }
 
 function registerMiniSentences(tabKey) {
   const cfg = MINI_TABS[tabKey];
   const entries = [];
-  cfg.items.forEach(item => {
-    item.sentences.forEach(s => {
-      entries.push({ tab: cfg.title, category: item.nl, colLabel: 'Example', sent: s });
+  cfg.sections.forEach(section => {
+    section.items.forEach(item => {
+      item.sentences.forEach(s => {
+        entries.push({ tab: cfg.title, category: item.nl, colLabel: section.heading || 'Example', sent: s });
+      });
     });
   });
+  if (cfg.dialogue) {
+    cfg.dialogue.forEach(line => {
+      entries.push({ tab: cfg.title, category: line.name, colLabel: 'Dialogue', sent: { nl: line.nl, en: line.en } });
+    });
+  }
   registerSentences(entries);
 }
 
@@ -3910,11 +4181,6 @@ function updateStickyOffsets() {
   document.body.style.paddingTop = headerH + 'px';
   if (controls) controls.style.top = headerH + 'px';
   if (tabVerbs) tabVerbs.style.paddingTop = (controlsH + gap) + 'px';
-
-  const theadOffset = (headerH + controlsH + gap) + 'px';
-  document.querySelectorAll('#verb-table-view thead th').forEach(th => {
-    th.style.top = theadOffset;
-  });
 }
 window.addEventListener('load', updateStickyOffsets);
 window.addEventListener('resize', updateStickyOffsets);
