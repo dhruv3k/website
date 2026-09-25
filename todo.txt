@@ -1,0 +1,11 @@
+THese are the todo tasks for LeerVlaams_v3:
+
+give option to choose character names
+extend the kids theme across all grammar tabs
+Add a tab to driving specific vocabulary (100 common words)
+add more verbs from flemish_verbs_list.html
+add separable verbs related to each verb
+add non separable verbs related to each verb
+Add exercises and evaluation mode in each tab
+Option to add new verbs and their forms
+Option to add new words in the vocabulary

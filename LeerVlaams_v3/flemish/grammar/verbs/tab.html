@@ -4,6 +4,7 @@
   <div class="view-toggle">
     <button class="view-btn active" id="btn-card-view" onclick="setVerbView('cards')">🃏 Cards</button>
     <button class="view-btn" id="btn-table-view" onclick="setVerbView('table')">📊 Table</button>
+    <button class="view-btn" id="btn-exercise-view" onclick="setVerbView('exercises')">🎯 Exercises</button>
   </div>
 
   <div class="cat-picker" id="verb-cat-picker"></div>
@@ -48,6 +49,15 @@
       <div class="leg"><div class="leg-dot" style="background:#ffeef8"></div>Passive</div>
       <div class="leg"><span class="aux aux-h">hebben</span></div>
       <div class="leg"><span class="aux aux-z">zijn</span></div>
+    </div>
+  </div>
+
+  <!-- EXERCISE VIEW -->
+  <div id="verb-exercise-view" style="display:none">
+    <div class="exercise-score" id="verb-exercise-score">0 / 0 correct</div>
+    <div id="verb-exercise-card"></div>
+    <div class="cat-actions" style="margin-top:10px">
+      <button class="cat-action-btn" onclick="nextVerbExercise()">🔄 Next question</button>
     </div>
   </div>
 
@@ -125,8 +135,51 @@ verbCats.forEach(cat => {
 function setVerbView(v) {
   document.getElementById('verb-card-view').style.display = v === 'cards' ? '' : 'none';
   document.getElementById('verb-table-view').style.display = v === 'table' ? '' : 'none';
+  document.getElementById('verb-exercise-view').style.display = v === 'exercises' ? '' : 'none';
   document.getElementById('btn-card-view').classList.toggle('active', v === 'cards');
   document.getElementById('btn-table-view').classList.toggle('active', v === 'table');
+  document.getElementById('btn-exercise-view').classList.toggle('active', v === 'exercises');
+  if (v === 'exercises') nextVerbExercise();
+}
+
+// ── EXERCISES (fill-in-the-blank conjugation) ──
+const verbExerciseScore = { correct: 0, total: 0 };
+let currentVerbExercise = null;
+
+function pickVerbExercise() {
+  const pool = [];
+  VERB_DATA.verbs.forEach((verb, vi) => {
+    if (!verbSelectedCats.has(verb.cat)) return;
+    V_COLS.forEach(col => {
+      const form = vGetForm(verb, col.key);
+      if (form === '—') return;
+      const sents = vGetSents(verb, col.key);
+      if (!sents || !sents.length) return;
+      pool.push({ vi, col, form, sent: sents[0] });
+    });
+  });
+  if (!pool.length) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function nextVerbExercise() {
+  const scoreEl = document.getElementById('verb-exercise-score');
+  const cardEl = document.getElementById('verb-exercise-card');
+  currentVerbExercise = pickVerbExercise();
+  activeExerciseUpdater = onExerciseAnswered;
+  if (!currentVerbExercise) {
+    cardEl.innerHTML = '<div style="font-size:.68rem;color:#a0b0c0;padding:4px">Select at least one verb category first.</div>';
+    return;
+  }
+  scoreEl.textContent = verbExerciseScore.correct + ' / ' + verbExerciseScore.total + ' correct';
+  cardEl.innerHTML = buildBlankExercise(currentVerbExercise.sent.nl, currentVerbExercise.form, 'verb_ex');
+}
+
+function onExerciseAnswered(correct) {
+  verbExerciseScore.total++;
+  if (correct) verbExerciseScore.correct++;
+  const scoreEl = document.getElementById('verb-exercise-score');
+  if (scoreEl) scoreEl.textContent = verbExerciseScore.correct + ' / ' + verbExerciseScore.total + ' correct';
 }
 
 // ── story intro ──
@@ -194,7 +247,7 @@ function toggleVerbCard(vi) {
     next:      'nextVerbCard(' + vi + ')',
     translate: "toggleTranslate('" + cid + "')",
     close:     'closeVerbCard(' + vi + ')'
-  });
+  }, { tab: 'Verbs', category: verb.cat + ' › ' + verb.nl, colLabel: 'Infinitive' });
 }
 
 function nextVerbCard(vi) {
@@ -258,7 +311,116 @@ function renderTable() {
 
     tr.innerHTML = html;
     tbody.appendChild(tr);
+
+    if (verb.related && ((verb.related.separable || []).length || (verb.related.nonSeparable || []).length)) {
+      const relTr = document.createElement('tr');
+      relTr.className = 'related-row';
+      const relId = 'vrel_' + vi;
+      relTr.innerHTML = '<td colspan="10">'
+        + '<button class="related-toggle" onclick="toggleRelated(\'' + relId + '\')">🔗 Related verbs (separable / non-separable)</button>'
+        + '<div class="related-body" id="' + relId + '"></div>'
+        + '</td>';
+      tbody.appendChild(relTr);
+    }
   });
+}
+
+// ── RELATED VERBS (separable / non-separable) ──
+// A related verb gets the exact same 9-column conjugation table as a
+// first-class verb (vGetForm/vGetSents only care about field names, not
+// about being in VERB_DATA.verbs), using this file's own lazy toggle-cell
+// convention (build on click, clear on second click).
+function buildRelatedVerbTable(vi, kind, ri, verb) {
+  const relCid = 'vrelrow_' + vi + '_' + kind + '_' + ri;
+  let html = '<div class="related-verb-block">'
+    + '<div class="related-verb-head">'
+    +   '<span class="card-emoji" style="font-size:1.3rem">' + verb.emoji + '</span>'
+    +   '<div><div class="card-nl">' + verb.nl + '</div><div class="card-en">' + verb.en + '</div></div>'
+    +   '<span class="related-kind-badge">' + (kind === 'separable' ? 'separable' : 'non-separable') + '</span>'
+    + '</div>'
+    + '<div class="table-wrap"><table><thead><tr>'
+    +   '<th>Verb</th>'
+    +   '<th class="inf-col">Infinitive<span class="th-note">wij / jullie / zij</span></th>'
+    +   '<th>ik<span class="th-note">present</span></th>'
+    +   '<th>je/jij<span class="th-note">present</span></th>'
+    +   '<th>hij/zij/het/u<span class="th-note">present</span></th>'
+    +   '<th>ik<span class="th-note">simple past</span></th>'
+    +   '<th>rest<span class="th-note">simple past</span></th>'
+    +   '<th>participle<span class="th-note">hebben / zijn</span></th>'
+    +   '<th>passive<span class="th-note">present</span></th>'
+    +   '<th>passive<span class="th-note">past</span></th>'
+    + '</tr></thead><tbody><tr>';
+
+  html += '<td class="verb-cell"><span class="verb-emoji">' + verb.emoji + '</span>'
+    + '<div class="verb-en">' + verb.en + '</div><div class="verb-nl">' + verb.nl + '</div></td>';
+
+  V_COLS.forEach(col => {
+    const form = vGetForm(verb, col.key);
+    const cid = relCid + '_' + col.key;
+    if (form === '—') {
+      html += '<td class="conj-cell na ' + col.cls + '"><span class="conj-form">—</span></td>';
+    } else {
+      let display = form;
+      if (col.key === 'participle' && verb.aux && verb.aux !== '—') {
+        const ac = verb.aux === 'hebben' ? 'aux-h' : 'aux-z';
+        display += ' <span class="aux ' + ac + '">' + verb.aux + '</span>';
+      }
+      html += '<td class="conj-cell ' + col.cls + '" onclick="toggleRelatedCell(\'' + cid + '\',' + vi + ',\'' + kind + '\',' + ri + ',\'' + col.key + '\')">'
+        + '<span class="conj-form">' + display + '</span>'
+        + '<div class="cell-expanded" id="' + cid + '"></div>'
+        + '</td>';
+    }
+  });
+
+  html += '</tr></tbody></table></div></div>';
+  return html;
+}
+
+function toggleRelated(relId) {
+  const body = document.getElementById(relId);
+  if (!body) return;
+  if (body.classList.contains('open')) { body.classList.remove('open'); body.innerHTML = ''; return; }
+  const vi = parseInt(relId.split('_')[1], 10);
+  const verb = VERB_DATA.verbs[vi];
+  let html = '';
+  (verb.related.separable || []).forEach((e, ri) => { html += buildRelatedVerbTable(vi, 'separable', ri, e); });
+  (verb.related.nonSeparable || []).forEach((e, ri) => { html += buildRelatedVerbTable(vi, 'nonSeparable', ri, e); });
+  body.innerHTML = html;
+  body.classList.add('open');
+}
+
+function toggleRelatedCell(cid, vi, kind, ri, colKey) {
+  const area = document.getElementById(cid);
+  if (!area) return;
+  if (area.classList.contains('open')) { area.classList.remove('open'); area.innerHTML = ''; return; }
+  const verb = VERB_DATA.verbs[vi].related[kind][ri];
+  const sents = vGetSents(verb, colKey);
+  if (!sents) {
+    area.classList.add('open');
+    area.innerHTML = '<div style="font-size:.68rem;color:#a0b0c0;padding:4px">No example available.</div>';
+    return;
+  }
+  if (verbCellIdx[cid] === undefined) verbCellIdx[cid] = 0;
+  const idx = verbCellIdx[cid] % sents.length;
+  const colLabel = (V_COLS.find(c => c.key === colKey) || {}).label || colKey;
+  area.classList.add('open');
+  area.innerHTML = buildSentenceCard(sents[idx], idx, sents.length, cid, {
+    next:      'nextRelatedCell(\'' + cid + '\',' + vi + ',\'' + kind + '\',' + ri + ',\'' + colKey + '\')',
+    translate: 'toggleTranslate(\'' + cid + '\')',
+    close:     'closeRelatedCell(\'' + cid + '\')'
+  }, { tab: 'Verbs', category: 'Related › ' + verb.nl, colLabel });
+}
+
+function nextRelatedCell(cid, vi, kind, ri, colKey) {
+  verbCellIdx[cid] = (verbCellIdx[cid] || 0) + 1;
+  const area = document.getElementById(cid);
+  if (area) { area.classList.remove('open'); area.innerHTML = ''; }
+  toggleRelatedCell(cid, vi, kind, ri, colKey);
+}
+
+function closeRelatedCell(cid) {
+  const area = document.getElementById(cid);
+  if (area) { area.classList.remove('open'); area.innerHTML = ''; }
 }
 
 function toggleTblCell(cid, vi, colKey) {
@@ -283,12 +445,13 @@ function toggleTblCell(cid, vi, colKey) {
   const idx  = verbCellIdx[cid] % sents.length;
   const sent = sents[idx];
 
+  const colLabel = (V_COLS.find(c => c.key === colKey) || {}).label || colKey;
   area.classList.add('open');
   area.innerHTML = buildSentenceCard(sent, idx, sents.length, cid, {
     next:      'nextTblCell(\'' + cid + '\',' + vi + ',\'' + colKey + '\')',
     translate: 'toggleTranslate(\'' + cid + '\')',
     close:     'closeTblCell(\'' + cid + '\')'
-  });
+  }, { tab: 'Verbs', category: verb.cat + ' › ' + verb.nl, colLabel });
 }
 
 function nextTblCell(cid, vi, colKey) {
@@ -333,7 +496,7 @@ function renderVerbs() {
   registerVerbSentences();
 }
 
-document.addEventListener('app:themechange', renderVerbs);
-document.addEventListener('app:diffchange', renderVerbs);
+document.addEventListener('app:themechange', refreshAllTabs);
+document.addEventListener('app:diffchange', refreshAllTabs);
 renderVerbs();
 </script>
