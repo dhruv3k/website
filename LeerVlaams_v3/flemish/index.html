@@ -583,6 +583,21 @@ body {
   transition: all .12s;
 }
 
+.speak-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: .85rem;
+  line-height: 1;
+  padding: 3px 5px;
+  margin-left: 2px;
+  color: var(--accent2);
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.speak-btn:hover { opacity: .65; }
+.speak-btn:active { transform: scale(0.92); }
+
 .sent-btn:hover {
   background: var(--dark);
   color: white;
@@ -987,6 +1002,10 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 .modal-title { font-size: .9rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
 .modal-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
 
+.voice-info-p { font-size: .75rem; color: var(--text2); line-height: 1.55; margin-bottom: 10px; }
+.voice-info-group { margin-bottom: 10px; }
+.voice-info-group-title { font-size: .72rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+
 .names-group { margin-bottom: 12px; }
 .names-group-title { font-size: .68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
 .names-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: .75rem; color: var(--text2); margin-bottom: 6px; }
@@ -1066,6 +1085,7 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
   .cat-action-btn { padding: 7px 11px; }
   .view-btn { padding: 9px 14px; }
   .sent-btn { padding: 6px 11px; }
+  .speak-btn { padding: 6px 8px; font-size: .95rem; }
   .translate-btn { padding: 9px 10px; }
   .related-toggle { padding: 6px 12px; }
   .collect-remove { padding: 6px; font-size: 1rem; }
@@ -1154,6 +1174,7 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
     <div class="ctrl-sep"></div>
     <button class="ctrl-btn" onclick="toggleNamesPanel()">✏️ Names</button>
     <button class="ctrl-btn" onclick="toggleCollectPanel()">📝 Notes (<span id="collect-count">0</span>)</button>
+    <button class="ctrl-btn" onclick="toggleVoiceInfoPanel()">🔊 Voice tips</button>
   </div>
   <div id="tabs-nav">
     <span class="tab-group-label">Grammar</span>
@@ -1205,6 +1226,37 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
       <button class="cat-action-btn" onclick="copyCollected()">Copy all</button>
       <button class="cat-action-btn" onclick="downloadCollected()">Download .txt</button>
       <button class="view-btn active" onclick="toggleCollectPanel(false)">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="voice-info-overlay" class="modal-overlay" onclick="if(event.target===this) toggleVoiceInfoPanel(false)">
+  <div class="modal-panel">
+    <div class="modal-title">🔊 Getting a Flemish voice</div>
+    <p class="voice-info-p">
+      Every 🔊 button reads the Dutch text aloud using your browser's built-in
+      text-to-speech — free, no account, no app needed. It automatically
+      tries a Flemish (Belgian Dutch) voice first, and falls back to
+      whatever Dutch voice your device has if it doesn't have one.
+    </p>
+    <div class="voice-info-group">
+      <div class="voice-info-group-title">📱 Android (Chrome)</div>
+      <p class="voice-info-p">Settings → System → Languages &amp; input → Text-to-speech output → ⚙️ next to "Google Text-to-Speech Engine" → Install voice data → Dutch → download <b>Nederlands (België)</b> if it's listed.</p>
+    </div>
+    <div class="voice-info-group">
+      <div class="voice-info-group-title">🪟 Windows</div>
+      <p class="voice-info-p">Settings → Time &amp; Language → Speech → Manage voices → Add voices → search <b>Dutch (Belgium)</b>.</p>
+    </div>
+    <div class="voice-info-group">
+      <div class="voice-info-group-title">🍎 iPhone / iPad / Mac</div>
+      <p class="voice-info-p">Settings → Accessibility → Spoken Content → Voices → Dutch → pick a <b>Belgium</b> voice if offered.</p>
+    </div>
+    <p class="voice-info-p" style="opacity:.75">
+      Not every device offers a Belgium-specific voice — if yours doesn't,
+      the app will just use whatever Dutch voice is available instead.
+    </p>
+    <div class="modal-actions">
+      <button class="view-btn active" onclick="toggleVoiceInfoPanel(false)">Got it</button>
     </div>
   </div>
 </div>
@@ -1367,6 +1419,45 @@ function substituteNames(text) {
 
 function escapeAttr(text) {
   return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+// ─── PRONUNCIATION (Flemish TTS) ───
+// Browser-native speech synthesis — no audio files or API key needed.
+// Prefers an nl-BE (Flemish) voice, falls back to any Dutch voice, and the
+// speak button simply isn't rendered if the browser has no TTS support.
+let dutchVoice = null;
+function pickDutchVoice() {
+  if (!window.speechSynthesis) return null;
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.lang === 'nl-BE')
+      || voices.find(v => v.lang && v.lang.toLowerCase() === 'nl-be')
+      || voices.find(v => v.lang && v.lang.toLowerCase().startsWith('nl'))
+      || null;
+}
+if (window.speechSynthesis) {
+  dutchVoice = pickDutchVoice();
+  speechSynthesis.onvoiceschanged = () => { dutchVoice = pickDutchVoice(); };
+}
+function speakDutch(text) {
+  if (!window.speechSynthesis || !text || text === '—') return;
+  speechSynthesis.cancel(); // don't queue if the user taps another word fast
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = (dutchVoice && dutchVoice.lang) || 'nl-BE';
+  if (dutchVoice) utt.voice = dutchVoice;
+  utt.rate = 0.9;
+  speechSynthesis.speak(utt);
+}
+function speakBtnHtml(text) {
+  if (!window.speechSynthesis || !text || text === '—') return '';
+  return '<button type="button" class="speak-btn" data-nl="' + escapeAttr(text) +
+    '" onclick="event.stopPropagation(); speakDutch(this.dataset.nl)" aria-label="Pronounce" title="Hear this in Dutch (Flemish accent if your device has one installed)">🔊</button>';
+}
+
+function toggleVoiceInfoPanel(force) {
+  const overlay = document.getElementById('voice-info-overlay');
+  if (!overlay) return;
+  const open = force !== undefined ? force : !overlay.classList.contains('open');
+  overlay.classList.toggle('open', open);
 }
 
 function buildNamesFormHtml() {
@@ -1570,6 +1661,7 @@ function buildSentenceCard(sent, idx, total, cellId, callbacks) {
       <button class="translate-btn" id="${cellId}_en" data-en="${escapeAttr(en)}" data-showing="0" onclick="${callbacks.translate}">🦁 Translate to English</button>
       <div class="sent-btns">
         <button class="sent-btn" onclick="${callbacks.next}">🔄 Next</button>
+        ${speakBtnHtml(nl)}
         <button class="sent-btn" onclick="${callbacks.recover}">🔽 Hide</button>
         <span class="sent-idx">${idx+1}/${total}</span>
       </div>
@@ -16639,7 +16731,7 @@ function renderCardGrid() {
     card.id = 'vcard_' + vi;
     card.innerHTML = `
       <span class="card-emoji">${verb.emoji}</span>
-      <div class="card-nl">${verb.nl}</div>
+      <div class="card-nl">${verb.nl} ${speakBtnHtml(verb.nl)}</div>
       <div class="card-en">${verb.en}</div>
       <div class="card-sent-wrap">
         <div id="vcard_${vi}_sent"></div>
@@ -16722,10 +16814,10 @@ function renderTable() {
           display += ' <span class="aux ' + ac + '">' + verb.aux + '</span>';
         }
         html += '<td class="conj-cell ' + col.cls + '">'
-          + '<span class="conj-form">' + display + '</span>'
+          + '<span class="conj-form">' + display + '</span>' + speakBtnHtml(form)
           + '<div class="cell-expanded" id="' + cid + '"></div>'
           + '<div class="cell-cover" id="' + cid + '_cover" onclick="revealCell(\'' + cid + '\')">'
-          +   '<span class="conj-form">' + display + '</span>'
+          +   '<span class="conj-form">' + display + '</span>' + speakBtnHtml(form)
           + '</div>'
           + '</td>';
         cellsToFill.push([cid, vi, col.key]);
@@ -16760,7 +16852,7 @@ function buildRelatedVerbTable(vi, kind, ri, verb) {
   let html = '<div class="related-verb-block">'
     + '<div class="related-verb-head">'
     +   '<span class="card-emoji" style="font-size:1.3rem">' + verb.emoji + '</span>'
-    +   '<div><div class="card-nl">' + verb.nl + '</div><div class="card-en">' + verb.en + '</div></div>'
+    +   '<div><div class="card-nl">' + verb.nl + ' ' + speakBtnHtml(verb.nl) + '</div><div class="card-en">' + verb.en + '</div></div>'
     +   '<span class="related-kind-badge">' + (kind === 'separable' ? 'separable' : 'non-separable') + '</span>'
     + '</div>'
     /* No <thead> here — the main verb table's header row (same 9 columns)
@@ -16784,10 +16876,10 @@ function buildRelatedVerbTable(vi, kind, ri, verb) {
         display += ' <span class="aux ' + ac + '">' + verb.aux + '</span>';
       }
       html += '<td class="conj-cell ' + col.cls + '">'
-        + '<span class="conj-form">' + display + '</span>'
+        + '<span class="conj-form">' + display + '</span>' + speakBtnHtml(form)
         + '<div class="cell-expanded" id="' + cid + '"></div>'
         + '<div class="cell-cover" id="' + cid + '_cover" onclick="revealCell(\'' + cid + '\')">'
-        +   '<span class="conj-form">' + display + '</span>'
+        +   '<span class="conj-form">' + display + '</span>' + speakBtnHtml(form)
         + '</div>'
         + '</td>';
       cellsToFill.push([cid, col.key]);
@@ -20165,7 +20257,7 @@ function renderMiniTab(tabKey) {
       card.className = 'vocab-card';
       card.innerHTML = `
         <span class="card-emoji">${item.emoji}</span>
-        <div class="card-nl">${item.nl}</div>
+        <div class="card-nl">${item.nl} ${speakBtnHtml(item.nl)}</div>
         <div class="card-en">${item.en}</div>
         <div class="card-sent-wrap">
           <div id="${cid}_sent"></div>
@@ -20198,7 +20290,7 @@ function renderMiniTab(tabKey) {
         <span class="dl-speaker">${line.emoji}</span>
         <div class="dl-body">
           <div class="dl-name">${substituteNames(line.name)}</div>
-          <div class="dl-nl">${highlightSentence(substituteNames(line.nl))}</div>
+          <div class="dl-nl">${highlightSentence(substituteNames(line.nl))} ${speakBtnHtml(substituteNames(line.nl))}</div>
           <div class="dl-en" id="${lineId}_en">${substituteNames(line.en)}</div>
         </div>`;
       dWrap.appendChild(el);
