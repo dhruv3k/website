@@ -1028,6 +1028,11 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 
 /* ─── EXERCISES (fill-in-the-blank) ─── */
 .exercise-card { border-left-color: var(--accent); }
+.exercise-prompt { font-size: .72rem; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.exercise-prompt b { color: var(--accent2); }
+.exercise-post { display: none; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.exercise-post.show { display: flex; }
+.exercise-post .translate-btn { display: inline-block; width: auto; flex: 1 1 auto; margin-top: 0; }
 .exercise-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .exercise-input {
   flex: 1; min-width: 140px; padding: 5px 9px; border-radius: 8px;
@@ -1669,16 +1674,37 @@ function buildSentenceCard(sent, idx, total, cellId, callbacks) {
 }
 
 // ─── FILL-IN-THE-BLANK EXERCISE ───
+// Finds `answer` in `text` as a whole word/phrase (not just any substring —
+// a plain indexOf would happily "find" "ga" inside "gaat" and blank the
+// wrong letters). Also used by the exercise pickers below to skip any
+// verb-form/sentence pairing where the answer can't actually be located in
+// its own example sentence, instead of silently showing an unblanked
+// sentence with nothing to fill in.
+function locateWholeWord(text, answer) {
+  if (!text || !answer) return null;
+  const esc = String(answer).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(^|[^\\p{L}\\p{N}])(' + esc + ')(?=$|[^\\p{L}\\p{N}])', 'iu');
+  const m = text.match(re);
+  if (!m) return null;
+  return { index: m.index + m[1].length, length: m[2].length };
+}
+
 // Generic enough to be reused by any tab: give it a sentence, the exact
-// answer text to blank out, and it renders a checkable question.
-function buildBlankExercise(sentence, answer, cellId, onResult) {
+// answer text to blank out, and it renders a checkable question. `en` (the
+// sentence's English translation) is optional — when given, a Translate and
+// a 🔊 pronounce button for the *full* sentence are included, but kept
+// hidden until the answer is checked or revealed (see checkBlankExercise/
+// revealBlankExercise), so they can't be used to peek at the answer early.
+function buildBlankExercise(sentence, answer, cellId, promptLabel, en) {
   const nl = substituteNames(sentence);
-  const hitIdx = nl.toLowerCase().indexOf(answer.toLowerCase());
-  const blanked = hitIdx < 0 ? nl
-    : nl.slice(0, hitIdx) + '▁'.repeat(Math.max(answer.length, 3)) + nl.slice(hitIdx + answer.length);
+  const loc = locateWholeWord(nl, answer);
+  const blanked = !loc ? nl
+    : nl.slice(0, loc.index) + '▁'.repeat(Math.max(loc.length, 3)) + nl.slice(loc.index + loc.length);
   const answerJs = escapeAttr(JSON.stringify(answer));
+  const enText = en ? substituteNames(en) : '';
   return `
     <div class="sent-card exercise-card" id="${cellId}_ex">
+      ${promptLabel ? '<div class="exercise-prompt">' + promptLabel + '</div>' : ''}
       <div class="sent-nl">${blanked}</div>
       <div class="exercise-row">
         <input type="text" class="exercise-input" id="${cellId}_input" placeholder="type the missing word(s)">
@@ -1686,6 +1712,11 @@ function buildBlankExercise(sentence, answer, cellId, onResult) {
         <button class="sent-btn" onclick="revealBlankExercise('${cellId}', ${answerJs})">Reveal</button>
       </div>
       <div class="exercise-feedback" id="${cellId}_feedback"></div>
+      ${enText ? `
+      <div class="exercise-post" id="${cellId}_post">
+        <button class="translate-btn" id="${cellId}_en" data-en="${escapeAttr(enText)}" data-showing="0" onclick="toggleTranslate('${cellId}')">🦁 Translate to English</button>
+        ${speakBtnHtml(nl)}
+      </div>` : ''}
     </div>`;
 }
 
@@ -1694,13 +1725,19 @@ function buildBlankExercise(sentence, answer, cellId, onResult) {
 // score tracker, without checkBlankExercise needing to know which tab it's in.
 let activeExerciseUpdater = null;
 
+function normalizeExerciseAnswer(text) {
+  return String(text).trim().toLowerCase().replace(/[.,!?;:]+$/, '').replace(/\s+/g, ' ');
+}
+
 function checkBlankExercise(cellId, answer) {
   const input = document.getElementById(cellId + '_input');
   const feedback = document.getElementById(cellId + '_feedback');
   if (!input || !feedback) return;
-  const correct = input.value.trim().toLowerCase() === answer.trim().toLowerCase();
+  const correct = normalizeExerciseAnswer(input.value) === normalizeExerciseAnswer(answer);
   feedback.textContent = correct ? '✅ Correct!' : '❌ Not quite — try again or reveal.';
   feedback.className = 'exercise-feedback ' + (correct ? 'ok' : 'bad');
+  const post = document.getElementById(cellId + '_post');
+  if (post) post.classList.add('show');
   if (typeof activeExerciseUpdater === 'function') activeExerciseUpdater(correct);
 }
 
@@ -1710,6 +1747,8 @@ function revealBlankExercise(cellId, answer) {
     feedback.textContent = '💡 Answer: ' + answer;
     feedback.className = 'exercise-feedback';
   }
+  const post = document.getElementById(cellId + '_post');
+  if (post) post.classList.add('show');
 }
 
 function toggleTranslate(cellId) {
@@ -16665,7 +16704,12 @@ function pickVerbExercise() {
       if (form === '—') return;
       const sents = vGetSents(verb, col.key);
       if (!sents || !sents.length) return;
-      pool.push({ vi, col, form, sent: sents[0] });
+      // Only offer a sentence where the form can actually be located and
+      // blanked — otherwise the user would see the sentence fully intact
+      // with nothing to fill in.
+      const sent = sents.find(s => locateWholeWord(substituteNames(s.nl), form));
+      if (!sent) return;
+      pool.push({ vi, col, form, sent });
     });
   });
   if (!pool.length) return null;
@@ -16682,7 +16726,13 @@ function nextVerbExercise() {
     return;
   }
   scoreEl.textContent = verbExerciseScore.correct + ' / ' + verbExerciseScore.total + ' correct';
-  cardEl.innerHTML = buildBlankExercise(currentVerbExercise.sent.nl, currentVerbExercise.form, 'verb_ex');
+  const exVerb = VERB_DATA.verbs[currentVerbExercise.vi];
+  // Names the verb (otherwise "fietsen"/"komen"/"gaan" could all fit the
+  // same blanked sentence) but deliberately not the tense/person — that's
+  // meant to be derived from the sentence itself (subject pronoun, other
+  // verbs' tense, etc.), which is the actual conjugation skill being tested.
+  const promptLabel = 'Fill in the correct form of <b>' + exVerb.nl + '</b>';
+  cardEl.innerHTML = buildBlankExercise(currentVerbExercise.sent.nl, currentVerbExercise.form, 'verb_ex', promptLabel, currentVerbExercise.sent.en);
 }
 
 // Called by checkBlankExercise() after grading an answer.
@@ -20379,8 +20429,11 @@ function pickMiniExercise(tabKey) {
     section.items.forEach(item => {
       const word = miniExerciseWord(item.nl);
       resolveMiniSentences(item).forEach(s => {
-        if (s.nl && s.nl !== '—' && s.nl.toLowerCase().includes(word.toLowerCase())) {
-          pool.push({ word, sent: s });
+        // Only offer a sentence where the word can actually be located and
+        // blanked — otherwise the user would see the sentence fully intact
+        // with nothing to fill in.
+        if (s.nl && s.nl !== '—' && locateWholeWord(substituteNames(s.nl), word)) {
+          pool.push({ word, en: item.en, sent: s });
         }
       });
     });
@@ -20406,7 +20459,12 @@ function nextMiniExercise(tabKey) {
     return;
   }
   scoreEl.textContent = s.correct + ' / ' + s.total + ' correct';
-  cardEl.innerHTML = buildBlankExercise(miniExerciseCurrent[tabKey].sent.nl, miniExerciseCurrent[tabKey].word, 'mini_ex_' + tabKey);
+  const cur = miniExerciseCurrent[tabKey];
+  // Names the target word (needed since this is a translation task, not a
+  // sentence you could derive the word from) but not its grammar category —
+  // that's meant to be worked out from the sentence itself.
+  const promptLabel = 'Fill in the Dutch word for: <b>' + cur.en + '</b>';
+  cardEl.innerHTML = buildBlankExercise(cur.sent.nl, cur.word, 'mini_ex_' + tabKey, promptLabel, cur.sent.en);
 }
 
 Object.keys(MINI_TABS).forEach(tabKey => {
