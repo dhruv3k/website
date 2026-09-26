@@ -200,12 +200,16 @@ body {
    being position:absolute (like #search-results below) means opening one
    never changes #app-header's own rendered height, so nothing on the page
    shifts down while it's open. */
+/* Fixed to the viewport (not anchored to the trigger button's own
+   position) so a drawer opened from a button anywhere in the header —
+   including ones near the right edge, like Topics/Settings — can never be
+   pushed partly off-screen on a narrow phone. */
 .hdr-menu {
   display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: min(340px, calc(100vw - 28px));
+  position: fixed;
+  top: calc(var(--header-h, 0px) + 4px);
+  left: 14px;
+  right: 14px;
   background: var(--dark2);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
@@ -699,6 +703,19 @@ thead th.inf-col { color: #7ab8e8; font-style: italic; }
   padding: 6px 12px;
 }
 
+/* The <td> itself still spans the full (800px+) scrollable table width via
+   colspan, so its text would otherwise stretch edge-to-edge and force
+   horizontal scrolling just to read it. Pinning this inner wrapper to the
+   left edge of .table-wrap's scroll box and capping its width to (roughly)
+   one viewport keeps the title/story readable — and in place — regardless
+   of how far the table is scrolled sideways. */
+.cat-row-frozen {
+  position: sticky;
+  left: 8px;
+  display: inline-block;
+  max-width: calc(100vw - 60px);
+}
+
 .cat-row-title {
   font-size: .68rem;
   font-weight: 700;
@@ -744,21 +761,32 @@ thead th.inf-col { color: #7ab8e8; font-style: italic; }
 /* The only thing that shows/hides a category's cards — sticky relative to
    the page (reusing the already-tracked fixed header/controls height, so
    no separate measurement is needed here unlike the table's --thead-h),
-   so it stays reachable while scrolling through an expanded category. */
+   so it stays reachable while scrolling through an expanded category.
+   Styled as an obvious pill *button* — a different colour from the orange
+   info box above it (which is no longer clickable) so it doesn't read as
+   more of the same static box, plus a shadow and hover/press feedback. */
 .cat-toggle-strip {
   position: sticky;
   top: calc(var(--header-h, 0px) + var(--controls-h, 0px));
   z-index: 10;
   grid-column: 1 / -1;
-  background: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  background: var(--accent2);
   color: white;
   cursor: pointer;
-  padding: 4px 12px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
   font-size: .68rem;
   font-weight: 700;
-  margin: 2px 0;
+  margin: 4px 0;
+  transition: all .12s;
 }
+.cat-toggle-strip:hover { box-shadow: var(--shadow-lg); filter: brightness(1.08); }
+.cat-toggle-strip:active { transform: scale(0.97); }
 
 /* Card view's per-category wrapper: transparent to the grid layout while
    expanded (its .vocab-card children become direct grid items of
@@ -810,17 +838,32 @@ tbody tr:not(.cat-row) td {
    near the top of .table-wrap's scroll box (below the thead) while
    scrolling through an expanded category, so it's always reachable. */
 tbody.cat-group.collapsed tr:not(.cat-row):not(.cat-toggle-row) { display: none; }
+/* The <td> only handles sticky positioning — its `display` must stay as a
+   normal table-cell, so the actual pill-button look lives on the inner
+   .cat-toggle-btn span instead (shared with the card-view strip below). */
 .cat-toggle-row td {
   position: sticky;
+  left: 8px;
   top: var(--thead-h, 40px);
   z-index: 10;
-  background: var(--accent);
+  padding: 4px 0;
+}
+.cat-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent2);
   color: white;
   cursor: pointer;
-  padding: 4px 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
   font-size: .68rem;
   font-weight: 700;
+  transition: all .12s;
 }
+.cat-toggle-btn:hover { box-shadow: var(--shadow-lg); filter: brightness(1.08); }
+.cat-toggle-btn:active { transform: scale(0.97); }
 .cat-toggle-chevron { display: inline-block; width: 1em; }
 
 .verb-cell {
@@ -1109,6 +1152,52 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 .exercise-feedback.bad { color: var(--neg); }
 .exercise-score { font-size: .72rem; color: var(--text2); margin-bottom: 10px; }
 
+/* Only ever one question on screen at a time here, so let it breathe
+   instead of sitting small in a corner — bigger text/input, and buttons
+   that read as clearly tappable rather than the small utility pills used
+   elsewhere (scoped to .exercise-view so those other reuses, e.g. the
+   Names/Collect modals, are untouched). */
+.exercise-view {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 8px 0 16px;
+}
+.exercise-view .exercise-score { font-size: .85rem; margin-bottom: 14px; }
+.exercise-view .exercise-prompt { font-size: .85rem; margin-bottom: 10px; }
+.exercise-view .sent-card { padding: 20px 22px; }
+.exercise-view .sent-nl { font-size: 1.05rem; line-height: 1.7; }
+.exercise-view .sent-visuals { font-size: 2rem; }
+.exercise-view .exercise-row { gap: 10px; margin-top: 16px; }
+.exercise-view .exercise-input {
+  font-size: 1rem;
+  padding: 12px 14px;
+  min-height: 46px;
+  border-radius: 10px;
+}
+.exercise-view .sent-btn {
+  font-size: .85rem;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 10px;
+}
+.exercise-view .exercise-feedback { font-size: .85rem; margin-top: 10px; }
+.exercise-view .exercise-post { margin-top: 12px; gap: 10px; }
+.exercise-view .exercise-post .translate-btn { font-size: .85rem; padding: 12px 16px; border-radius: 10px; }
+.exercise-view .speak-btn { font-size: 1.2rem; padding: 8px 12px; }
+.exercise-view .cat-actions { margin-top: 18px; justify-content: center; }
+.exercise-view .cat-action-btn {
+  font-size: .9rem;
+  font-weight: 700;
+  padding: 14px 28px;
+  border-radius: 12px;
+  background: var(--accent2);
+  color: white;
+  border-color: var(--accent2);
+  box-shadow: var(--shadow);
+}
+.exercise-view .cat-action-btn:hover { filter: brightness(1.08); box-shadow: var(--shadow-lg); }
+.exercise-view .cat-action-btn:active { transform: scale(0.97); }
+
 /* ─── RELATED VERBS (separable / non-separable) ─── */
 .related-row td { background: #fbfbfd; padding: 6px 10px; }
 .related-toggle {
@@ -1207,9 +1296,6 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
         <button class="tab-btn" data-tab="adjectives">Adjectives</button>
         <button class="tab-btn" data-tab="determiners">Determiners</button>
         <button class="tab-btn" data-tab="prepositions">Prepositions</button>
-        <button class="tab-btn" data-tab="numbers">Numbers & Time</button>
-        <button class="tab-btn" data-tab="nouns">Nouns</button>
-        <button class="tab-btn" data-tab="phrases">Phrases</button>
       </div>
     </div>
 
@@ -1217,6 +1303,8 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
       <button id="topics-menu-btn" class="hdr-menu-btn" onclick="toggleHeaderMenu('topics')">☰ Topics</button>
       <span class="hdr-current-tab" id="current-tab-topics"></span>
       <div id="topics-menu" class="hdr-menu" data-menu="topics">
+        <button class="tab-btn" data-tab="numbers">🔢 Numbers & Time</button>
+        <button class="tab-btn" data-tab="phrases">💬 Phrases</button>
         <button class="tab-btn" data-tab="space">🚀 Space</button>
         <button class="tab-btn" data-tab="sea">🌊 Sea</button>
         <button class="tab-btn" data-tab="birds">🐦 Birds</button>
@@ -1364,7 +1452,7 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
   </div>
 
   <!-- EXERCISE VIEW -->
-  <div id="verb-exercise-view" style="display:none">
+  <div id="verb-exercise-view" class="exercise-view" style="display:none">
     <div class="exercise-score" id="verb-exercise-score">0 / 0 correct</div>
     <div id="verb-exercise-card"></div>
     <div class="cat-actions" style="margin-top:10px">
@@ -1771,6 +1859,40 @@ function normalizeExerciseAnswer(text) {
   return String(text).trim().toLowerCase().replace(/[.,!?;:]+$/, '').replace(/\s+/g, ' ');
 }
 
+// ─── EXERCISE FEEDBACK SOUNDS ───
+// Short tones synthesized with the Web Audio API — no audio files or
+// external assets needed, same self-contained approach as the 🔊
+// pronunciation feature. One shared AudioContext is created lazily on the
+// first Check tap (browsers require a user gesture before audio can play).
+let exerciseAudioCtx = null;
+function playExerciseTone(freqs, noteLength) {
+  try {
+    if (!window.AudioContext && !window.webkitAudioContext) return;
+    if (!exerciseAudioCtx) exerciseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = exerciseAudioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    let t = ctx.currentTime;
+    freqs.forEach(freq => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + noteLength);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + noteLength + 0.02);
+      t += noteLength;
+    });
+  } catch (e) {}
+}
+// Quick rising arpeggio (C5-E5-G5) for correct, a lower descending pair for
+// incorrect — deliberately short so rapid-fire practice doesn't feel slow.
+function playCorrectSound() { playExerciseTone([523.25, 659.25, 783.99], 0.1); }
+function playIncorrectSound() { playExerciseTone([220, 174.61], 0.16); }
+
 function checkBlankExercise(cellId, answer) {
   const input = document.getElementById(cellId + '_input');
   const feedback = document.getElementById(cellId + '_feedback');
@@ -1778,6 +1900,7 @@ function checkBlankExercise(cellId, answer) {
   const correct = normalizeExerciseAnswer(input.value) === normalizeExerciseAnswer(answer);
   feedback.textContent = correct ? '✅ Correct!' : '❌ Not quite — try again or reveal.';
   feedback.className = 'exercise-feedback ' + (correct ? 'ok' : 'bad');
+  if (correct) playCorrectSound(); else playIncorrectSound();
   const post = document.getElementById(cellId + '_post');
   if (post) post.classList.add('show');
   if (typeof activeExerciseUpdater === 'function') activeExerciseUpdater(correct);
@@ -16713,6 +16836,8 @@ function toggleCatGroup(cat, groupElId, toggleElId) {
   const toggleEl = toggleElId && document.getElementById(toggleElId);
   const chevron = toggleEl && toggleEl.querySelector('.cat-toggle-chevron');
   if (chevron) chevron.textContent = expanded ? '▾' : '▸';
+  const action = toggleEl && toggleEl.querySelector('.cat-toggle-action');
+  if (action) action.textContent = expanded ? 'hide' : 'show';
 }
 
 // ── view toggle ──
@@ -16823,7 +16948,8 @@ function renderCardGrid() {
     toggleStrip.className = 'cat-toggle-strip';
     toggleStrip.id = toggleId;
     toggleStrip.onclick = () => toggleCatGroup(cat, groupId, toggleId);
-    toggleStrip.innerHTML = '<span class="cat-toggle-chevron">' + (verbExpandedCats.has(cat) ? '▾' : '▸') + '</span> ' + cat;
+    toggleStrip.innerHTML = '<span class="cat-toggle-chevron">' + (verbExpandedCats.has(cat) ? '▾' : '▸') + '</span> '
+      + cat + ' — tap to <span class="cat-toggle-action">' + (verbExpandedCats.has(cat) ? 'hide' : 'show') + '</span>';
     grid.appendChild(toggleStrip);
 
     const group = document.createElement('div');
@@ -16902,10 +17028,10 @@ function renderTable() {
     const story = getCatStory(cat);
     const headTr = document.createElement('tr');
     headTr.className = 'cat-row';
-    headTr.innerHTML = '<td colspan="10">'
+    headTr.innerHTML = '<td colspan="10"><div class="cat-row-frozen">'
       + '<div class="cat-row-title">' + cat + '</div>'
       + buildStoryHtml(story, 'cat-row-story')
-      + '</td>';
+      + '</div></td>';
     tbody.appendChild(headTr);
 
     // The only thing that shows/hides this category's rows — sticky, so
@@ -16915,8 +17041,9 @@ function renderTable() {
     toggleTr.className = 'cat-toggle-row';
     toggleTr.id = toggleId;
     toggleTr.onclick = () => toggleCatGroup(cat, bodyId, toggleId);
-    toggleTr.innerHTML = '<td colspan="10"><span class="cat-toggle-chevron">'
-      + (verbExpandedCats.has(cat) ? '▾' : '▸') + '</span> ' + cat + '</td>';
+    toggleTr.innerHTML = '<td colspan="10"><span class="cat-toggle-btn"><span class="cat-toggle-chevron">'
+      + (verbExpandedCats.has(cat) ? '▾' : '▸') + '</span> ' + cat + ' — tap to <span class="cat-toggle-action">'
+      + (verbExpandedCats.has(cat) ? 'hide' : 'show') + '</span></span></td>';
     tbody.appendChild(toggleTr);
 
     entries.forEach(({ verb, vi }) => {
@@ -18057,46 +18184,46 @@ window.MINI_TABS = {
       { emoji: '8️⃣', nl: 'acht', en: 'eight', sentences: [{ nl: 'Krish staat om acht uur op.', en: "Krish gets up at eight o'clock.", tags: [], visuals: ['8️⃣','⏰'] }]},
       { emoji: '9️⃣', nl: 'negen', en: 'nine', sentences: [{ nl: 'De vergadering begint om negen uur.', en: "The meeting starts at nine o'clock.", tags: [], visuals: ['9️⃣','📅'] }]},
       { emoji: '🔟', nl: 'tien', en: 'ten', sentences: [{ nl: 'Lotte heeft tien jaar ervaring.', en: 'Lotte has ten years of experience.', tags: [], visuals: ['🔟','👩'] }]},
-      { emoji: '🔢', nl: 'elf', en: 'eleven', sentences: [{ nl: 'Hanu is elf jaar oud.', en: 'Hanu is eleven years old.', tags: [], visuals: ['🔢','💪'] }]},
-      { emoji: '🔢', nl: 'twaalf', en: 'twelve', sentences: [{ nl: 'Er zijn twaalf maanden in een jaar.', en: 'There are twelve months in a year.', tags: [], visuals: ['🔢','📅'] }]},
-      { emoji: '🔢', nl: 'dertien', en: 'thirteen', sentences: [{ nl: 'Strea is dertien jaar oud.', en: 'Strea is thirteen years old.', tags: [], visuals: ['🔢','👧'] }]},
-      { emoji: '🔢', nl: 'veertien', en: 'fourteen', sentences: [{ nl: 'De vakantie duurt veertien dagen.', en: 'The holiday lasts fourteen days.', tags: [], visuals: ['🔢','🏖️'] }]},
-      { emoji: '🔢', nl: 'vijftien', en: 'fifteen', sentences: [{ nl: 'Krish leest vijftien bladzijden per dag.', en: 'Krish reads fifteen pages a day.', tags: [], visuals: ['🔢','📖'] }]},
-      { emoji: '🔢', nl: 'zestien', en: 'sixteen', sentences: [{ nl: "Het rapport heeft zestien pagina's.", en: 'The report has sixteen pages.', tags: [], visuals: ['🔢','📄'] }]},
-      { emoji: '🔢', nl: 'zeventien', en: 'seventeen', sentences: [{ nl: 'Er werken zeventien mensen op kantoor.', en: 'Seventeen people work at the office.', tags: [], visuals: ['🔢','🏢'] }]},
-      { emoji: '🔢', nl: 'achttien', en: 'eighteen', sentences: [{ nl: 'Thomas begon te werken toen hij achttien was.', en: 'Thomas started working when he was eighteen.', tags: ['toen'], visuals: ['🔢','👨'] }]},
-      { emoji: '🔢', nl: 'negentien', en: 'nineteen', sentences: [{ nl: 'Het huis had negentien jaar geleden een verbouwing.', en: 'The house had a renovation nineteen years ago.', tags: [], visuals: ['🔢','🏠'] }]},
-      { emoji: '🔢', nl: 'twintig', en: 'twenty', sentences: [{ nl: "Lotte heeft twintig collega's.", en: 'Lotte has twenty colleagues.', tags: [], visuals: ['🔢','👩','👥'] }]},
-      { emoji: '🔢', nl: 'eenentwintig', en: 'twenty-one', sentences: [{ nl: 'Lars is eenentwintig jaar getrouwd.', en: 'Lars has been married for twenty-one years.', tags: [], visuals: ['🔢','💍'] }]},
-      { emoji: '🔢', nl: 'tweeëntwintig', en: 'twenty-two', sentences: [{ nl: 'De vergadering duurt tweeëntwintig minuten.', en: 'The meeting lasts twenty-two minutes.', tags: [], visuals: ['🔢','⏰'] }]},
-      { emoji: '🔢', nl: 'drieëntwintig', en: 'twenty-three', sentences: [{ nl: 'Er zijn drieëntwintig e-mails in mijn inbox.', en: 'There are twenty-three emails in my inbox.', tags: [], visuals: ['🔢','📧'] }]},
-      { emoji: '🔢', nl: 'vierentwintig', en: 'twenty-four', sentences: [{ nl: 'Een dag heeft vierentwintig uur.', en: 'A day has twenty-four hours.', tags: [], visuals: ['🔢','⏰'] }]},
-      { emoji: '🔢', nl: 'vijfentwintig', en: 'twenty-five', sentences: [{ nl: 'Thomas werkt al vijfentwintig dagen aan dit project.', en: 'Thomas has been working on this project for twenty-five days.', tags: ['al'], visuals: ['🔢','📋'] }]},
-      { emoji: '🔢', nl: 'zesentwintig', en: 'twenty-six', sentences: [{ nl: 'Er staan zesentwintig letters in het alfabet.', en: 'There are twenty-six letters in the alphabet.', tags: [], visuals: ['🔢','🔤'] }]},
-      { emoji: '🔢', nl: 'zevenentwintig', en: 'twenty-seven', sentences: [{ nl: 'Krish woont in huisnummer zevenentwintig.', en: 'Krish lives at house number twenty-seven.', tags: [], visuals: ['🔢','🏠'] }]},
-      { emoji: '🔢', nl: 'achtentwintig', en: 'twenty-eight', sentences: [{ nl: 'Februari heeft meestal achtentwintig dagen.', en: 'February usually has twenty-eight days.', tags: [], visuals: ['🔢','📅'] }]},
-      { emoji: '🔢', nl: 'negenentwintig', en: 'twenty-nine', sentences: [{ nl: 'Strea telt negenentwintig knikkers.', en: 'Strea counts twenty-nine marbles.', tags: [], visuals: ['🔢','🔵'] }]},
-      { emoji: '🔢', nl: 'dertig', en: 'thirty', sentences: [{ nl: 'Lotte werkt dertig uur per week.', en: 'Lotte works thirty hours a week.', tags: [], visuals: ['🔢','💼'] }]}
+      { emoji: '[11]', nl: 'elf', en: 'eleven', sentences: [{ nl: 'Hanu is elf jaar oud.', en: 'Hanu is eleven years old.', tags: [], visuals: ['[11]','💪'] }]},
+      { emoji: '[12]', nl: 'twaalf', en: 'twelve', sentences: [{ nl: 'Er zijn twaalf maanden in een jaar.', en: 'There are twelve months in a year.', tags: [], visuals: ['[12]','📅'] }]},
+      { emoji: '[13]', nl: 'dertien', en: 'thirteen', sentences: [{ nl: 'Strea is dertien jaar oud.', en: 'Strea is thirteen years old.', tags: [], visuals: ['[13]','👧'] }]},
+      { emoji: '[14]', nl: 'veertien', en: 'fourteen', sentences: [{ nl: 'De vakantie duurt veertien dagen.', en: 'The holiday lasts fourteen days.', tags: [], visuals: ['[14]','🏖️'] }]},
+      { emoji: '[15]', nl: 'vijftien', en: 'fifteen', sentences: [{ nl: 'Krish leest vijftien bladzijden per dag.', en: 'Krish reads fifteen pages a day.', tags: [], visuals: ['[15]','📖'] }]},
+      { emoji: '[16]', nl: 'zestien', en: 'sixteen', sentences: [{ nl: "Het rapport heeft zestien pagina's.", en: 'The report has sixteen pages.', tags: [], visuals: ['[16]','📄'] }]},
+      { emoji: '[17]', nl: 'zeventien', en: 'seventeen', sentences: [{ nl: 'Er werken zeventien mensen op kantoor.', en: 'Seventeen people work at the office.', tags: [], visuals: ['[17]','🏢'] }]},
+      { emoji: '[18]', nl: 'achttien', en: 'eighteen', sentences: [{ nl: 'Thomas begon te werken toen hij achttien was.', en: 'Thomas started working when he was eighteen.', tags: ['toen'], visuals: ['[18]','👨'] }]},
+      { emoji: '[19]', nl: 'negentien', en: 'nineteen', sentences: [{ nl: 'Het huis had negentien jaar geleden een verbouwing.', en: 'The house had a renovation nineteen years ago.', tags: [], visuals: ['[19]','🏠'] }]},
+      { emoji: '[20]', nl: 'twintig', en: 'twenty', sentences: [{ nl: "Lotte heeft twintig collega's.", en: 'Lotte has twenty colleagues.', tags: [], visuals: ['[20]','👩','👥'] }]},
+      { emoji: '[21]', nl: 'eenentwintig', en: 'twenty-one', sentences: [{ nl: 'Lars is eenentwintig jaar getrouwd.', en: 'Lars has been married for twenty-one years.', tags: [], visuals: ['[21]','💍'] }]},
+      { emoji: '[22]', nl: 'tweeëntwintig', en: 'twenty-two', sentences: [{ nl: 'De vergadering duurt tweeëntwintig minuten.', en: 'The meeting lasts twenty-two minutes.', tags: [], visuals: ['[22]','⏰'] }]},
+      { emoji: '[23]', nl: 'drieëntwintig', en: 'twenty-three', sentences: [{ nl: 'Er zijn drieëntwintig e-mails in mijn inbox.', en: 'There are twenty-three emails in my inbox.', tags: [], visuals: ['[23]','📧'] }]},
+      { emoji: '[24]', nl: 'vierentwintig', en: 'twenty-four', sentences: [{ nl: 'Een dag heeft vierentwintig uur.', en: 'A day has twenty-four hours.', tags: [], visuals: ['[24]','⏰'] }]},
+      { emoji: '[25]', nl: 'vijfentwintig', en: 'twenty-five', sentences: [{ nl: 'Thomas werkt al vijfentwintig dagen aan dit project.', en: 'Thomas has been working on this project for twenty-five days.', tags: ['al'], visuals: ['[25]','📋'] }]},
+      { emoji: '[26]', nl: 'zesentwintig', en: 'twenty-six', sentences: [{ nl: 'Er staan zesentwintig letters in het alfabet.', en: 'There are twenty-six letters in the alphabet.', tags: [], visuals: ['[26]','🔤'] }]},
+      { emoji: '[27]', nl: 'zevenentwintig', en: 'twenty-seven', sentences: [{ nl: 'Krish woont in huisnummer zevenentwintig.', en: 'Krish lives at house number twenty-seven.', tags: [], visuals: ['[27]','🏠'] }]},
+      { emoji: '[28]', nl: 'achtentwintig', en: 'twenty-eight', sentences: [{ nl: 'Februari heeft meestal achtentwintig dagen.', en: 'February usually has twenty-eight days.', tags: [], visuals: ['[28]','📅'] }]},
+      { emoji: '[29]', nl: 'negenentwintig', en: 'twenty-nine', sentences: [{ nl: 'Strea telt negenentwintig knikkers.', en: 'Strea counts twenty-nine marbles.', tags: [], visuals: ['[29]','🔵'] }]},
+      { emoji: '[30]', nl: 'dertig', en: 'thirty', sentences: [{ nl: 'Lotte werkt dertig uur per week.', en: 'Lotte works thirty hours a week.', tags: [], visuals: ['[30]','💼'] }]}
     ]},
     { heading: 'Numbers 40–100 (by tens)', note: '', items: [
-      { emoji: '🔢', nl: 'veertig', en: 'forty', sentences: [{ nl: 'Lars werkt veertig uur per week.', en: 'Lars works forty hours a week.', tags: [], visuals: ['🔢','💼'] }]},
-      { emoji: '🔢', nl: 'vijftig', en: 'fifty', sentences: [{ nl: 'Er komen vijftig gasten naar het feest.', en: 'Fifty guests are coming to the party.', tags: [], visuals: ['🔢','🎉'] }]},
-      { emoji: '🔢', nl: 'zestig', en: 'sixty', sentences: [{ nl: 'Een uur heeft zestig minuten.', en: 'An hour has sixty minutes.', tags: [], visuals: ['🔢','⏰'] }]},
-      { emoji: '🔢', nl: 'zeventig', en: 'seventy', sentences: [{ nl: 'De auto rijdt zeventig kilometer per uur.', en: 'The car drives seventy kilometers per hour.', tags: [], visuals: ['🔢','🚗'] }]},
-      { emoji: '🔢', nl: 'tachtig', en: 'eighty', sentences: [{ nl: "Hanus opa is tachtig jaar oud.", en: "Hanu's grandfather is eighty years old.", tags: [], visuals: ['🔢','👴'] }]},
-      { emoji: '🔢', nl: 'negentig', en: 'ninety', sentences: [{ nl: 'Het rapport is voor negentig procent klaar.', en: 'The report is ninety percent finished.', tags: [], visuals: ['🔢','📄'] }]},
+      { emoji: '[40]', nl: 'veertig', en: 'forty', sentences: [{ nl: 'Lars werkt veertig uur per week.', en: 'Lars works forty hours a week.', tags: [], visuals: ['[40]','💼'] }]},
+      { emoji: '[50]', nl: 'vijftig', en: 'fifty', sentences: [{ nl: 'Er komen vijftig gasten naar het feest.', en: 'Fifty guests are coming to the party.', tags: [], visuals: ['[50]','🎉'] }]},
+      { emoji: '[60]', nl: 'zestig', en: 'sixty', sentences: [{ nl: 'Een uur heeft zestig minuten.', en: 'An hour has sixty minutes.', tags: [], visuals: ['[60]','⏰'] }]},
+      { emoji: '[70]', nl: 'zeventig', en: 'seventy', sentences: [{ nl: 'De auto rijdt zeventig kilometer per uur.', en: 'The car drives seventy kilometers per hour.', tags: [], visuals: ['[70]','🚗'] }]},
+      { emoji: '[80]', nl: 'tachtig', en: 'eighty', sentences: [{ nl: "Hanus opa is tachtig jaar oud.", en: "Hanu's grandfather is eighty years old.", tags: [], visuals: ['[80]','👴'] }]},
+      { emoji: '[90]', nl: 'negentig', en: 'ninety', sentences: [{ nl: 'Het rapport is voor negentig procent klaar.', en: 'The report is ninety percent finished.', tags: [], visuals: ['[90]','📄'] }]},
       { emoji: '💯', nl: 'honderd', en: 'hundred', sentences: [{ nl: 'Er wonen honderd mensen in het dorp.', en: 'A hundred people live in the village.', tags: [], visuals: ['💯','🏘️'] }]}
     ]},
     { heading: 'Ordinals', note: '', items: [
       { emoji: '🥇', nl: 'eerste', en: 'first', sentences: [{ nl: "Vandaag is Thomas' eerste werkdag.", en: "Today is Thomas's first workday.", tags: [], visuals: ['🥇','👨'] }]},
       { emoji: '🥈', nl: 'tweede', en: 'second', sentences: [{ nl: 'Mijn kantoor is op de tweede verdieping.', en: 'My office is on the second floor.', tags: [], visuals: ['🥈','🏢'] }]},
       { emoji: '🥉', nl: 'derde', en: 'third', sentences: [{ nl: 'Dit is de derde vergadering vandaag.', en: 'This is the third meeting today.', tags: [], visuals: ['🥉','📅'] }]},
-      { emoji: '🔢', nl: 'vierde', en: 'fourth', sentences: [{ nl: 'Strea zit in de vierde klas.', en: 'Strea is in the fourth grade.', tags: [], visuals: ['🔢','👧'] }]},
-      { emoji: '🔢', nl: 'vijfde', en: 'fifth', sentences: [{ nl: "Dit is Lars' vijfde jaar bij het bedrijf.", en: "This is Lars's fifth year at the company.", tags: [], visuals: ['🔢','👨'] }]},
-      { emoji: '🔢', nl: 'zesde', en: 'sixth', sentences: [{ nl: 'Krish viert vandaag zijn zesde verjaardag.', en: 'Krish celebrates his sixth birthday today.', tags: ['zijn'], visuals: ['🔢','🎂'] }]},
-      { emoji: '🔢', nl: 'zevende', en: 'seventh', sentences: [{ nl: 'Dit is al de zevende e-mail vandaag.', en: 'This is already the seventh email today.', tags: ['al'], visuals: ['🔢','📧'] }]},
-      { emoji: '🔢', nl: 'achtste', en: 'eighth', sentences: [{ nl: 'Vandaag is het de achtste van de maand.', en: 'Today is the eighth of the month.', tags: [], visuals: ['🔢','📅'] }]},
-      { emoji: '🔢', nl: 'negende', en: 'ninth', sentences: [{ nl: 'Hanu staat als negende in de rij.', en: 'Hanu is ninth in the line.', tags: [], visuals: ['🔢','🚶'] }]},
+      { emoji: '4️⃣', nl: 'vierde', en: 'fourth', sentences: [{ nl: 'Strea zit in de vierde klas.', en: 'Strea is in the fourth grade.', tags: [], visuals: ['4️⃣','👧'] }]},
+      { emoji: '5️⃣', nl: 'vijfde', en: 'fifth', sentences: [{ nl: "Dit is Lars' vijfde jaar bij het bedrijf.", en: "This is Lars's fifth year at the company.", tags: [], visuals: ['5️⃣','👨'] }]},
+      { emoji: '6️⃣', nl: 'zesde', en: 'sixth', sentences: [{ nl: 'Krish viert vandaag zijn zesde verjaardag.', en: 'Krish celebrates his sixth birthday today.', tags: ['zijn'], visuals: ['6️⃣','🎂'] }]},
+      { emoji: '7️⃣', nl: 'zevende', en: 'seventh', sentences: [{ nl: 'Dit is al de zevende e-mail vandaag.', en: 'This is already the seventh email today.', tags: ['al'], visuals: ['7️⃣','📧'] }]},
+      { emoji: '8️⃣', nl: 'achtste', en: 'eighth', sentences: [{ nl: 'Vandaag is het de achtste van de maand.', en: 'Today is the eighth of the month.', tags: [], visuals: ['8️⃣','📅'] }]},
+      { emoji: '9️⃣', nl: 'negende', en: 'ninth', sentences: [{ nl: 'Hanu staat als negende in de rij.', en: 'Hanu is ninth in the line.', tags: [], visuals: ['9️⃣','🚶'] }]},
       { emoji: '🔟', nl: 'tiende', en: 'tenth', sentences: [{ nl: "Dit is het tiende project van Lotte dit jaar.", en: "This is Lotte's tenth project this year.", tags: [], visuals: ['🔟','👩'] }]}
     ]},
     { heading: 'Adverbial Numbers', note: '', items: [
@@ -20322,7 +20449,7 @@ function renderMiniTab(tabKey) {
         <button class="view-btn" data-view="exercises" onclick="toggleMiniView('${tabKey}','exercises')">🎯 Exercises</button>
       </div>
       <div id="mini-vocab-${tabKey}"></div>
-      <div id="mini-exercise-${tabKey}" style="display:none">
+      <div id="mini-exercise-${tabKey}" class="exercise-view" style="display:none">
         <div class="exercise-score" id="mini-exercise-score-${tabKey}">0 / 0 correct</div>
         <div id="mini-exercise-card-${tabKey}"></div>
         <div class="cat-actions" style="margin-top:10px">
