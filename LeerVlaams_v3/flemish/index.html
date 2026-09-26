@@ -842,13 +842,17 @@ tbody.cat-group.collapsed tr:not(.cat-row):not(.cat-toggle-row) { display: none;
    normal table-cell, so the actual pill-button look lives on the inner
    .cat-toggle-btn span instead (shared with the card-view strip below). */
 .cat-toggle-row td {
+  padding: 4px 0;
+}
+/* Sticky on the pill itself (not the outer <td>) — same pattern as
+   .cat-row-frozen above, which is what actually keeps it pinned to the
+   visible left edge of .table-wrap's horizontal scroll instead of sliding
+   off with the rest of the (colspan=10) row. */
+.cat-toggle-btn {
   position: sticky;
   left: 8px;
   top: var(--thead-h, 40px);
   z-index: 10;
-  padding: 4px 0;
-}
-.cat-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1143,6 +1147,7 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 .exercise-post.show { display: flex; }
 .exercise-post .translate-btn { display: inline-block; width: auto; flex: 1 1 auto; margin-top: 0; }
 .exercise-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.exercise-btn-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .exercise-input {
   flex: 1; min-width: 140px; padding: 5px 9px; border-radius: 8px;
   border: 1.5px solid var(--border2); font-family: 'Inter', sans-serif; font-size: .78rem;
@@ -1168,6 +1173,7 @@ tbody tr:not(.cat-row):hover .verb-cell { background: #f5f8ff; }
 .exercise-view .sent-nl { font-size: 1.05rem; line-height: 1.7; }
 .exercise-view .sent-visuals { font-size: 2rem; }
 .exercise-view .exercise-row { gap: 10px; margin-top: 16px; }
+.exercise-view .exercise-btn-row { gap: 10px; margin-top: 12px; }
 .exercise-view .exercise-input {
   font-size: 1rem;
   padding: 12px 14px;
@@ -1838,6 +1844,8 @@ function buildBlankExercise(sentence, answer, cellId, promptLabel, en) {
       <div class="sent-nl">${blanked}</div>
       <div class="exercise-row">
         <input type="text" class="exercise-input" id="${cellId}_input" placeholder="type the missing word(s)">
+      </div>
+      <div class="exercise-btn-row">
         <button class="sent-btn" onclick="checkBlankExercise('${cellId}', ${answerJs})">Check</button>
         <button class="sent-btn" onclick="revealBlankExercise('${cellId}', ${answerJs})">Reveal</button>
       </div>
